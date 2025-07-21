@@ -1225,14 +1225,15 @@ def encontro_aleatorio():
             'a2': 'Mordida',
         }
     }
+    inimigos_permitidos = ['esqueleto', 'lobo']
     if 1 <= play.nivel <= 5:
         hp_range = (50, 100)
         atk_range = (10, 25)
         xp_range = (100, 250)
         gold_range = (1, 15)
         nivel_range = (1, 5)
-        tipo_escolhido = random.choice(list(inimigo_tipos.keys()))
-        dados_inimigo = inimigo_tipos['esqueleto'or'lobo']
+        tipo_escolhido = random.choice(inimigos_permitidos)
+        dados_inimigo = inimigo_tipos[tipo_escolhido]
         hp_aleatorio = random.randint(*hp_range)
         atk_aleatorio = random.randint(*atk_range)
         xp_aleatorio = random.randint(*xp_range)
@@ -1256,8 +1257,8 @@ def encontro_aleatorio():
         xp_range = (125, 400)
         gold_range = (100, 150)
         nivel_range = (5, 10)
-        tipo_escolhido = random.choice(list(inimigo_tipos.keys()))
-        dados_inimigo = inimigo_tipos['esqueleto'or'lobo']
+        tipo_escolhido = random.choice(inimigos_permitidos)
+        dados_inimigo = inimigo_tipos[tipo_escolhido]
         hp_aleatorio = random.randint(*hp_range)
         atk_aleatorio = random.randint(*atk_range)
         xp_aleatorio = random.randint(*xp_range)
