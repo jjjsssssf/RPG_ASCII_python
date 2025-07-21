@@ -683,7 +683,7 @@ class Player:
                 while True:
                     clear()
                     console.print(f'[bold yellow]+'+'-'*45+'+')
-                    console.print(f"[bold cyan]Gold:{self.gold} Itens[/bold cyan]")
+                    console.print(f"[bold cyan]Gold:{self.gold}[/bold cyan]")
                     console.print('  [1]Consumiveis:\n  [2]Equipar')
                     console.print(f'[bold blue]Escolha uma opção: [0 para sair][/bold blue]')
                     console.print(f'[bold yellow]+'+'-'*45+'+')
@@ -699,7 +699,9 @@ class Player:
                             console.print(f'[bold blue]Escolha uma opção: [0 para sair][/bold blue]')
                             console.print(f'[bold yellow]+'+'-'*45+'+')
                             consumivel = input('=>')
-                            if consumivel == '1':
+                            if consumivel == '0':
+                                break 
+                            elif consumivel == '1':
                                 while True:
                                     clear()
                                     console.print(f'[bold yellow]+'+'-'*45+'+')
@@ -722,12 +724,14 @@ class Player:
                         while True:
                             clear()
                             console.print(f'[bold yellow]+'+'-'*45+'+')
-                            console.print(f"[bold cyan]Gold:{self.gold} Itens[/bold cyan]")
+                            console.print(f"[bold cyan]Gold:{self.gold}[/bold cyan]")
                             console.print('  [1]Espada Curta:[100]\n  [2]Capacete:[100]\n  [3]Capuz:[100]\n  [4]Peitoral:[150]\n  [5]Manto:[150]')
                             console.print(f'[bold blue]Escolha uma opção: [0 para sair][/bold blue]')
                             console.print(f'[bold yellow]+'+'-'*45+'+')
                             equipaveis = input('=>')
-                            if equipaveis == '1':
+                            if equipaveis == '0':
+                                break 
+                            elif equipaveis == '1':
                                 while True:
                                     clear()
                                     console.print(f'[bold yellow]+'+'-'*45+'+')
