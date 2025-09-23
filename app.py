@@ -52,6 +52,8 @@ def batalha():
             if escolha == "4":
                 with term.location(x=x_jogador+32, y=7):
                     print(term.bold_red("Você fugiu da batalha."))
+                    jj.buff_atk = 0
+                    jj.buff_def = 0
                 time.sleep(2)
                 return True
             elif escolha == "1":
@@ -73,7 +75,8 @@ def batalha():
                     time.sleep(3)
                     jj.gold += ee.gold
                     jj.xp += ee.xp
-                    jj.buff = 0
+                    jj.buff_atk = 0
+                    jj.buff_def = 0
                     jj.add_xp(ee.xp)
                     return True
                 ee.ataque_selec(jj, x_janela=31, y_janela=17)
@@ -114,7 +117,7 @@ def app():
                 with term.location(x=0, y=12):
                     escolha_classe = input(">")
                 if escolha_classe =="1":
-                    jj = jogador(nome=escolha_nome, hp_max=100, atk=5, niv=1, xp_max=100, defesa=0, gold=0, stm_max=75, intt=5, mn_max=75, d_m=15, art_player=ascii.mago, mana_lit=[["Bola de Fogo"]])
+                    jj = jogador(nome=escolha_nome, hp_max=100, atk=5, niv=1, xp_max=100, defesa=0, gold=0, stm_max=75, intt=5, mn_max=75, d_m=15, art_player=ascii.mago, mana_lit=[["Bola de Fogo"], ["Escudo Mágico"]])
                     
                 elif escolha_classe == "2":
                     jj = jogador(nome=escolha_nome, hp_max=100, atk=15, niv=1, xp_max=100, defesa=5, gold=0, stm_max=100, intt=0, mn_max=75, d_m=10, art_player=ascii.guerriro, mana_lit=[["Cura Leve"]])

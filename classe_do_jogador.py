@@ -13,6 +13,8 @@ class jogador:
         self.stm_max = stm_max
         self.stm = self.stm_max
         self.atk = atk
+        self.buff_atk = 0
+        self.buff_def = 0
         self.intt = intt
         self.niv = niv
         self.xp_max = xp_max
@@ -171,7 +173,7 @@ class jogador:
         with term.location(x=x_janela+1, y=y_janela+3):
             print(f"MG: [{term.bold_magenta(str(self.mana_max))}/{term.magenta(str(self.mana))}] MA: [{term.bold_purple(str(self.dano_magico+3))}-{term.purple(str(self.dano_magico-3))}]")
         with term.location(x=x_janela+1, y=y_janela+4):
-            print(f"AT: [{term.bold_red(str(self.atk+3))}-{term.red(str(self.atk-3))}] DF: [{term.bold_cyan(str(self.defesa))}")
+            print(f"AT: [{term.bold_red(str(self.atk))}-{term.red(str(self.buff_atk))}] DF: [{term.bold_cyan(str(self.defesa))}{term.cyan(str(self.buff_def))}]")
         with term.location(x=x_janela+1, y=y_janela+5):
             print(f"AT: [{term.bold_blue(str(self.intt))}] Classe: [{term.bold_cyan(str(manager))}]")
         with term.location(x=x_janela+1, y=y_janela+5):
@@ -189,7 +191,7 @@ class jogador:
         with term.location(x=x_janela+1, y=y_janela+2):
             print(f"MG: [{term.bold_magenta(str(self.mana_max))}/{term.magenta(str(self.mana))}] MA: [{term.bold_purple(str(self.dano_magico+3))}-{term.purple(str(self.dano_magico-3))}]")
         with term.location(x=x_janela+1, y=y_janela+3):
-            print(f"AT: [{term.bold_red(str(self.atk+3))}-{term.red(str(self.atk-3))}] DF: [{term.bold_cyan(str(self.defesa+3))}-{term.cyan(str(self.defesa-3))}]")
+            print(f"AT: [{term.bold_red(str(self.atk))}-{term.red(str(self.buff_atk))}] DF: [{term.bold_cyan(str(self.defesa))}-{term.cyan(str(self.buff_def))}]")
         with term.location(x=x_janela+1, y=y_janela+4):
             print(f"Nivel: [{term.yellow(str(self.niv))}]")
              
@@ -276,7 +278,7 @@ class jogador:
                 text_content = f"Você lançou {magia.nome} e causou {dano} de dano."
                 sucesso = True
             elif magia.tipo == "Defesa":
-                self.defesa += magia.bonus_def
+                self.buff_def += magia.bonus_def
                 text_content = f"Você usou {magia.nome} e sua defesa aumentou em {magia.bonus_def}."
                 sucesso = True
             elif magia.tipo == "Ajuda":
@@ -284,7 +286,7 @@ class jogador:
                 text_content = f"Você usou {magia.nome} e seu ataque aumentou em {magia.bonus_atk}."
                 sucesso = True
             elif magia.tipo == "Necro":
-                self.atk += magia.bonus_atk
+                self.buff_atk += magia.bonus_atk
                 text_content = f"Você envocou um {magia.nome} ajudando na batalha {self.atk}."
                 sucesso = True
         herd = 3
@@ -299,7 +301,7 @@ class jogador:
                 self.stm -= 10
                 dano_ale = random.randint(int(self.atk - 3), int(self.atk + 3))
                 meno_defsa = alvo.defesa // 4
-                dano_final = int(dano_ale - meno_defsa)
+                dano_final = int(self.buff_atk + dano_ale - meno_defsa)
                 mensagem = f"{str(self.nome)} deu um dano de {str(dano_final)}\nno {str(alvo.nome)}"
                 alvo.hp -= dano_final
                 time.sleep(1)
