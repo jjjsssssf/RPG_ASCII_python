@@ -1,0 +1,45 @@
+{
+    "nome": "JJ",
+    "hp_max": 100,
+    "hp": 100,
+    "atk": 15,
+    "niv": 1,
+    "xp_max": 100,
+    "defesa": 10,
+    "gold": 0,
+    "stm_max": 100,
+    "stm": 100,
+    "intt": 10,
+    "mn_max": 100,
+    "mana": 100,
+    "d_m": 20,
+    "buff": 0,
+    "xp": 100,
+    "aleatorio": 75,
+    "inventario": [
+        "Cura Total",
+        "Po\u00e7\u00e3o de Cura",
+        "Elixir",
+        "Po\u00e7\u00e3o de Cura",
+        "Crucifixo"
+    ],
+    "mana_lit": [
+        "Cura",
+        "Bola de Fogo",
+        "Dan\u00e7a das Espadas"
+    ],
+    "equipa": {
+        "m_pri": null,
+        "m_seg": null,
+        "c_cap": null,
+        "p_pet": null,
+        "s_crad": null
+    },
+    "itens_coletaodos": {
+        "item_1": true,
+        "item_2": false,
+        "Farol": false,
+        "Dentro_Farol": false
+    },
+    "rodar": false
+}
