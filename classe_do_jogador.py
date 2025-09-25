@@ -29,14 +29,13 @@ class jogador:
         self.classe= {
             "Guerreiro":None,
             "Mago":None,
-            "Barbaro":None,
             "Negromante":None
         }
         self.inventario = [TODOS_OS_ITENS["Poção de Cura"], TODOS_OS_ITENS["Elixir"], TODOS_OS_ITENS["Poção de Cura"],TODOS_OS_ITENS["Crucifixo"]]
         self.locais = {
             "Vila": True,
             "Farol":None,
-            "Floresta":None,
+            "Moinho":None,
             "Caverna":None,
             "Mar":None,
             "Deserto":None,
@@ -57,10 +56,9 @@ class jogador:
             "Dentro_Farol": False,
         }
     
-    def save_game(self, filename="Demo.json"):
+    def save_game(self, filename="Demo.json", x_l=int, y_l =int):
         inventario_nomes = [item.nome for item in self.inventario]
         equipa_nomes = {slot: item.nome if item else None for slot, item in self.equipa.items()}
-        
         player_data = {
             "nome": self.nome,
             "hp_max": self.hp_max,
@@ -82,21 +80,27 @@ class jogador:
             "mana_lit": self.mana_lit,
             "equipa": equipa_nomes,
             "itens_coletaodos": self.itens_coletaodos,
-            "rodar": self.rodar_jogo
+            "rodar": self.rodar_jogo,
+            "classes": self.classe,
         }
         try:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(player_data, f, indent=4)
-            print(f"Jogo salvo com sucesso em '{filename}'!")
+            with term.location(x=x_l, y=y_l):
+                print(f"Jogo salvo com sucesso em")
+            with term.location(x=x_l, y=y_l+1):
+                print(f"'{filename}'")            
         except IOError as e:
-            print(f"Erro ao salvar o jogo: {e}")
-        time.sleep(1.5)
+            with term.location(x=x_l, y=y_l):
+                print(f"Erro ao salvar o jogo: {e}")
 
     @classmethod
-    def load_game(cls, filename="Demo.json"):
+    def load_game(cls, filename="Demo.json", x_l=int, y_l =int):
         if not os.path.exists(filename):
-            print(f"Nenhum arquivo de salvamento encontrado em '{filename}'. Iniciando novo jogo.")
-            time.sleep(1.5)
+            with term.location(x=x_l, y=y_l):
+                print(f"Nenhum arquivo de salvamento")
+            with term.location(x=x_l, y=y_l+1):
+                print(f"encontrado em '{filename}'.")
             return None
         try:
             with open(filename, 'r', encoding='utf-8') as f:
@@ -125,11 +129,12 @@ class jogador:
             player.mana = player_data["mana"]
             player.stm = player_data["stm"]
             player.rodar_jogo = player_data["rodar"]
+            player.classe = player_data["classes"]
             print(f"Jogo carregado com sucesso de '{filename}'!")
             return player
         except (IOError, json.JSONDecodeError, KeyError) as e:
-            print(f"Erro ao carregar o jogo: {e}. Iniciando novo jogo.")
-            time.sleep(1.5)
+            with term.location(x=x_l, y=y_l):
+                print(f"Erro ao carregar o jogo: {e}.")
             return None
     
     def menu(self, x_janela, y_janela):
@@ -139,13 +144,13 @@ class jogador:
         with term.location(x=x_janela+1, y=herd-2):
             escolha = input(">")
         if escolha == "1":
-            self.status(x_janela=55, y_janela=0)
+            self.status(x_janela=x_janela, y_janela=y_janela+6)
         elif escolha == "2":
             clear()
             self.inventario_(x_inv=0, y_inv=0, batalha=False)
         elif escolha == "3":
             clear()
-            self.menu_magias(x_menu=0, y_menu=0, batalha=False)
+            self.menu_magias(x_menu=0, y_menu=0, batalha=False, alvo=None)
         elif escolha == "4":
             self.save_game(filename=f"Demo.json")
         elif escolha == "5":
@@ -159,8 +164,6 @@ class jogador:
             manager = "Mago"
         elif self.classe["Guerreiro"] == True:
             manager = "Guerreiro"
-        elif self.classe["Barbaro"] == True:
-            manager = "Barbaro"
         elif self.classe["Negromante"] == True:
             manager = "Necromante"
         else:
@@ -173,12 +176,16 @@ class jogador:
         with term.location(x=x_janela+1, y=y_janela+3):
             print(f"MG: [{term.bold_magenta(str(self.mana_max))}/{term.magenta(str(self.mana))}] MA: [{term.bold_purple(str(self.dano_magico+3))}-{term.purple(str(self.dano_magico-3))}]")
         with term.location(x=x_janela+1, y=y_janela+4):
-            print(f"AT: [{term.bold_red(str(self.atk))}-{term.red(str(self.buff_atk))}] DF: [{term.bold_cyan(str(self.defesa))}{term.cyan(str(self.buff_def))}]")
+            print(f"AT: [{term.bold_red(str(self.atk))}-{term.red(str(self.buff_atk))}] DF: [{term.bold_cyan(str(self.defesa))}-{term.cyan(str(self.buff_def))}]")
         with term.location(x=x_janela+1, y=y_janela+5):
             print(f"AT: [{term.bold_blue(str(self.intt))}] Classe: [{term.bold_cyan(str(manager))}]")
-        with term.location(x=x_janela+1, y=y_janela+5):
+        self.status_art(x_janela=x_janela+32, y_janela=y_janela)
+        with term.location(x=x_janela+1, y=y_janela+6):
             input(">")
-    #status do jogador
+    def status_art(self ,x_janela, y_janela):
+        art_player = self.art_player
+        draw_window(term, x=x_janela, y=y_janela, width=31, height=11, text_content=art_player)
+
     def status_batalha_art(self, x_janela, y_janela):
         art_player = self.art_player
         draw_window(term, x=x_janela, y=y_janela, width=31, height=11, text_content=art_player)
@@ -312,7 +319,7 @@ class jogador:
             mensagem = "Você não tem ST suficiente"
             time.sleep(1)
         herd = 4
-        draw_window(term, x_janela, y_janela, width=len(mensagem)-6, height=herd, text_content=mensagem)
+        draw_window(term, x_janela, y_janela, width=len(mensagem)-5, height=herd, text_content=mensagem)
 
     def inventario_(self, x_inv, y_inv, batalha):
         text_content = ""
@@ -425,28 +432,18 @@ class jogador:
         draw_window(term, x_loq, y_loq, width=25, height=herd, title="Loja")
         with term.location(x=x_pos, y=y_pos):
             print("Gold: ["+term.bold_yellow(f"{self.gold}")+"]")
-        y_pos+=1
-        with term.location(x=x_pos, y=y_pos):
+        with term.location(x=x_pos, y=y_pos+1):
             print("[1] Comprar itens")
-        y_pos+=1
-        with term.location(x=x_pos, y=y_pos):
+        with term.location(x=x_pos, y=y_pos+2):
             print("[2] Vender itens")
-        y_pos+=1
-        with term.location(x=x_pos, y=y_pos):
+        with term.location(x=x_pos, y=y_pos+3):
             print("[3] Sair da loja")
-        y_pos+=1
-        with term.location(x=x_pos, y=y_pos):
+        with term.location(x=x_pos, y=y_pos+4):
             escolha = input("> ")
         if escolha == "1":
-            x_mw = x_pos+25
-            y_mw = y_pos = 1
-            x_ms = x_loq+25
-            y_ms = y_loq+0
-            self.comprar_itens(x_m=x_mw, y_m=y_mw, herd=7, x_l = x_ms, y_l= y_ms)
+            self.comprar_itens(x_m=x_pos+26, y_m=y_pos, herd=7, x_l =x_loq+25, y_l=y_loq)
         elif escolha == "2":
-            x_ms = x_loq + 25
-            y_ms = y_loq + 0
-            self.vender_itens(x_l=x_ms, y_l=y_ms)
+            self.vender_itens(x_l=x_loq+0, y_l=y_loq +7)
         elif escolha == "3":
             with term.location(x=x_pos, y=y_pos):
                 print("Saindo da loja")
@@ -459,22 +456,18 @@ class jogador:
         draw_window(term, x_l, y_l, width=25, height= herd, title="Comprar")
         with term.location(x=x_m, y=y_m):
             print("Gold: ["+term.bold_yellow(f"{self.gold}")+"]")
-        y_m +=1
-        with term.location(x=x_m, y=y_m):
+        with term.location(x=x_m, y=y_m+1):
             print("[1] Itens Equipáveis")
-        y_m +=1
-        with term.location(x=x_m, y=y_m):
+        with term.location(x=x_m, y=y_m+2):
             print("[2] Itens Consumíveis")
-        y_m +=1
-        with term.location(x=x_m, y=y_m):
+        with term.location(x=x_m, y=y_m+3):
             print("[3] Voltar")
-        y_m +=1
-        with term.location(x=x_m, y=y_m):
+        with term.location(x=x_m, y=y_m+4):
             escolha_tipo = input(">")
             if escolha_tipo == "1":
-                self.exibir_itens_por_tipo("Equipavel", x_l + 25, y_l)
+                self.exibir_itens_por_tipo("Equipavel", x_l-25, y_l=7-y_l)
             elif escolha_tipo == "2":
-                self.exibir_itens_por_tipo("Consumivel", x_l + 25, y_l)
+                self.exibir_itens_por_tipo("Consumivel", x_l-25, y_l=7-y_l)
             elif escolha_tipo == "3":
                 return
             else:
@@ -494,7 +487,7 @@ class jogador:
         num_linhas_texto = text_content.count('\n') + 1
         herd = num_linhas_texto + 3
         draw_window(term, x_l, y_l, width=35, height=herd, title=f"Comprar {tipo.capitalize()}", text_content=text_content)
-        with term.location(x_l + 2, y_l + herd - 2):
+        with term.location(x_l +1, y_l + herd - 2):
             try:
                 escolha_item = int(input(">"))
                 if escolha_item == 0:
@@ -554,8 +547,9 @@ class jogador:
                 with term.location(x_l + 2, y_l + herd):
                     print(" " * 30)
 
-    def hospital(self):
-        print("Você dormil essa noite")
+    def hospital(self, x_, y_):
+        with term.location(x=x_, y=y_):
+            print("Você dormil essa noite")
         self.hp = self.hp_max
         self.stm = self.stm_max
         self.mana = self.mana_max
@@ -635,4 +629,4 @@ class jogador:
 
 if __name__ == "__main__":
     jj = jogador(nome="JJ", hp_max=100, atk=10, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=art.guerriro)
-    jj.escolha(0, 0)
+    jj.gerenciar_loja(x_pos=1, y_pos=1, herd=7, x_loq=0, y_loq=0)
