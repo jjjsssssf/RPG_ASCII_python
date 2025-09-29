@@ -1,84 +1,134 @@
 from ast import arg
+from jogo import mini_mapa
 from classe_arts import draw_window, term, clear
-from jogo import jogo_
 import random, time, string
 from classe_do_jogador import jogador
 from classe_do_inimigo import inimigo
-from classe_arts import art_ascii
+from classe_arts import art_ascii, Cores
+from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musica
 from classe_do_inventario import TODOS_OS_ITENS
 ascii = art_ascii()
-jj = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro)
+C = Cores()
+jj = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="0")
 ee = inimigo(nome="", hp_max=0, atk=0, niv=0, xp=0, defesa=0, gold=0, art_ascii="",atk1="",atk2="")
+thread_musica = None
 
 def menu_inicial(x_l, y_l):
-    global jj
+    NOME_DO_ARQUIVO = "Title_.mp3"
+    escolher_e_tocar_musica(NOME_DO_ARQUIVO)
     while True:
         clear()
         menu_art = ascii.titulo
-        ess = "[1]Jogar\n[2]Carregar\n[3]Sair"
-        num_linha = menu_art.count("\n")
-        herd = num_linha
-        draw_window(term, x=x_l,y=y_l, width=90, height=24, text_content=menu_art)
-        draw_window(term, x=x_l+25, y=y_l+herd+1, width=25, height=6, text_content=ess)
+        opcoes = "[1] Jogar\n[2] Carregar\n[3] Sair"
+        herd = menu_art.count("\n")
+        draw_window(term, x=x_l, y=y_l, width=90, height=24, text_content=menu_art)
+        draw_window(term, x=x_l+25, y=y_l+herd+1, width=25, height=6, text_content=opcoes)
         with term.location(x=x_l+27, y=y_l+herd+5):
             escolha = input(">")
         if escolha == "1":
-            while True:
-                noess = "Qual será seu Nome:\nmaximo de 8 caracteres\n"
-                clear()
-                num_linha_ = noess.count("\n")
-                herd_ = num_linha_+ 4
-                draw_window(term, x=x_l,y=y_l, width=90, height=24, text_content=menu_art)
-                draw_window(term, x=x_l+25, y=y_l+herd+1, width=25, height=herd_, text_content=noess)
-                with term.location(x=x_l+26, y=y_l+herd+5):
-                    escolha_nome = input(">")
-                if len(escolha_nome) > 8:
-                    with term.location(x=x_l+26, y=y_l+herd+5):
-                        print("Nome muito extenço")
-                    time.sleep(2)
-                elif len(escolha_nome) < 1:
-                    with term.location(x=x_l+26, y=y_l+herd+5):
-                        print("Utilize uma letra")
-                    time.sleep(2)
-                else:
-                    while True:
-                        clear()
-                        clsee = "Escolha Sua Classe\n[1]Guerreiro\n[2]Mago\n[3]Negromante"
-                        num_linha_2 = clsee.count("\n")
-                        herd_2 = num_linha_2+ 4
-                        draw_window(term, x=x_l,y=y_l, width=90, height=24, text_content=menu_art)
-                        draw_window(term, x=x_l+25, y=y_l+herd+1, width=25, height=herd_2, text_content=clsee)
-                        with term.location(x=x_l+26, y=y_l+herd+6):
-                            escolha_classe = input(">")
-                        if escolha_classe == "2":
-                            jj = jogador(nome=escolha_nome, hp_max=100, atk=5, niv=1, xp_max=100, defesa=0, gold=0, stm_max=75, intt=5, mn_max=75, d_m=15, art_player=ascii.mago, mana_lit=[["Bola de Fogo"], ["Escudo Mágico"]])
-                            jj.classe["Guerreiro"] = True
-                            jj.rodar_jogo = True
-                            break
-                        elif escolha_classe == "1":
-                            jj = jogador(nome=escolha_nome, hp_max=100, atk=15, niv=1, xp_max=100, defesa=5, gold=0, stm_max=100, intt=0, mn_max=75, d_m=10, art_player=ascii.guerriro, mana_lit=[["Cura Leve"]])
-                            jj.classe["Mago"] = True
-                            jj.rodar_jogo = True
-                            break
-                        elif escolha_classe == "3":
-                            jj = jogador(nome=escolha_nome, hp_max=100, atk=10, niv=1, xp_max=100, defesa=0, gold=0, stm_max=100, intt=5, mn_max=100, d_m=15, art_player=ascii.necro, mana_lit=[["Esqueleto"]])
-                            jj.classe["Negromante"] = True
-                            jj.rodar_jogo = True
-                            break
-                        else:
-                            with term.location(x=x_l+26, y=y_l+herd+6):
-                                print("Digite o número correto")
-                            time.sleep(2)
-                    jogo_(x_l=0, y_l=0, player=jj, ascii=ascii, enimy=ee)
+            nome = solicitar_nome(x_l, y_l, menu_art)
+            skin, caractere, cor_final = escolher_personagem(x_l, y_l)
+            jj = jogador(
+                nome=nome,
+                hp_max=100,
+                atk=10,
+                niv=1,
+                xp_max=100,
+                defesa=5,
+                gold=0,
+                stm_max=100,
+                intt=5,
+                mn_max=50,
+                d_m=15,
+                art_player=skin,
+                skin=cor_final
+            )
+            mini_mapa(x_l=31, y_l=0, player=jj, ascii=ascii)
+
         elif escolha == "2":
-            draw_window(term, x=x_l,y=y_l, width=90, height=24, text_content=menu_art)
-            draw_window(term, x=x_l+25, y=y_l+herd+1, width=30, height=6,)
-            jj.load_game(filename=f"Demo.json",x_l=x_l+26, y_l=y_l+herd+2)
+            draw_window(term, x=x_l, y=y_l, width=90, height=24, text_content=menu_art)
+            draw_window(term, x=x_l+25, y=y_l+herd+1, width=30, height=6)
+            jj.load_game(filename="Demo.json", x_l=x_l+26, y_l=y_l+herd+2)
             with term.location(x=x_l+26, y=y_l+herd+5):
                 input(">")
 
         elif escolha == "3":
             exit()
+
+def solicitar_nome(x_l, y_l, menu_art):
+    while True:
+        clear()
+        prompt = "Qual será seu Nome:\n(max 8 caracteres)"
+        num_linhas = prompt.count("\n") + 4
+        draw_window(term, x=x_l, y=y_l, width=90, height=24, text_content=menu_art)
+        draw_window(term, x=x_l+25, y=y_l+num_linhas+2, width=27, height=num_linhas, text_content=prompt)
+
+        with term.location(x=x_l+26, y=y_l+num_linhas+5):
+            nome = input(">")
+
+        if len(nome) > 8:
+            mostrar_mensagem(x_l+26, y_l+num_linhas+5, "Nome muito extenso")
+        elif len(nome) < 1:
+            mostrar_mensagem(x_l+26, y_l+num_linhas+5, "Digite pelo menos 1 letra")
+        else:
+            return nome
+
+def escolher_personagem(x_l, y_l):
+    personagens = {
+        "1": ascii.necro,
+        "2": ascii.guerriro,
+        "3": ascii.mago
+    }
+    while True:
+        clear()
+        draw_window(term, x=x_l, y=y_l, width=90, height=24)
+        draw_window(term, x=x_l+2, y=y_l+1, width=25, height=11, title="1", text_content=ascii.necro)
+        draw_window(term, x=x_l+32, y=y_l+1, width=25, height=11, title="2", text_content=ascii.guerriro)
+        draw_window(term, x=x_l+64, y=y_l+1, width=25, height=11, title="3", text_content=ascii.mago)
+
+        with term.location(x=x_l+2, y=y_l+12):
+            escolha = input("Escolha uma Skin: ")
+
+        if escolha in personagens:
+            skin = personagens[escolha]
+            caractere = solicitar_caractere(x_l, y_l)
+            cor_final = escolher_cor(caractere, x_l, y_l)
+            return skin, caractere, cor_final
+
+def solicitar_caractere(x_l, y_l):
+    while True:
+        with term.location(x=x_l+2, y=y_l+13):
+            print("Escolha um caractere do seu personagem: ")
+        with term.location(x=x_l+2, y=y_l+14):
+            caractere = input(">")
+        if len(caractere) == 1:
+            return caractere
+        else:
+            with term.location(x=x_l+2, y=y_l+15):
+                print("Use apenas UM caractere")
+            time.sleep(2)
+
+def escolher_cor(caractere, x_l, y_l):
+    cores = {
+        "1": C.AZUL,
+        "2": C.AMARELO,
+        "3": C.VERDE,
+        "4": C.VERMELHO
+    }
+    while True:
+        with term.location(x=x_l+2, y=y_l+15):
+            print("Escolha um Cor: ")
+        with term.location(x=x_l+2, y=y_l+16):
+            print(f"{C.AZUL}[1]Azul {C.AMARELO}[2]Amarelo {C.VERDE}[3]Verde {C.VERMELHO}[4]Vermelho")
+        with term.location(x=x_l+2, y=y_l+17):
+            escolha = input(">")
+        if escolha in cores:
+            return f"{cores[escolha]}{caractere}{C.RESET}"
+
+def mostrar_mensagem(x, y, mensagem):
+    with term.location(x, y):
+        print(mensagem)
+    time.sleep(2)
 
 
 menu_inicial(x_l=0, y_l=0)

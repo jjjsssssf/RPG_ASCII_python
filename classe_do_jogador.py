@@ -4,8 +4,9 @@ from classe_do_inventario import Item, TODOS_OS_ITENS, magias, TODAS_AS_MAGIAS
 from collections import defaultdict
 art= art_ascii()
 class jogador:
-    def __init__(self, nome, hp_max, atk, niv, xp_max, defesa, gold, stm_max, intt, mn_max, d_m,art_player,mana_lit=None):
+    def __init__(self, nome, hp_max, atk, niv, xp_max, defesa, gold, stm_max, intt, mn_max, d_m,art_player, skin, mana_lit=None):
         self.nome = nome
+        self.skin = skin
         self.hp_max = hp_max
         self.hp = self.hp_max
         self.mana_max = mn_max
@@ -24,8 +25,9 @@ class jogador:
         self.gold = gold
         self.rodar_jogo = False
         self.aleatorio = 75
-        self.andar = 0
         self.art_player = art_player
+        self.x = 0
+        self.y = 0
         self.classe= {
             "Guerreiro":None,
             "Mago":None,
@@ -624,9 +626,3 @@ class jogador:
                 escolha_classe = input(">")
             if escolha_classe == "1":
                 self.nome = escolha_classe
-
-
-
-if __name__ == "__main__":
-    jj = jogador(nome="JJ", hp_max=100, atk=10, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=art.guerriro)
-    jj.gerenciar_loja(x_pos=1, y_pos=1, herd=7, x_loq=0, y_loq=0)

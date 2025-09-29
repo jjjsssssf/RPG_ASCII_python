@@ -40,7 +40,6 @@ def draw_window(term, x, y, width, height, title='', text_content='', bg_color='
                 with term.location(x + 2, y + i + 1):
                     print(text_style + line[:width - 4] + term.normal)
 
-
 def escolhas_(esc, esc1, esc2, esc3, y_pos, x_pos):
     with term.location(x_pos, y_pos):
         print(term.bold("xX"+"="*25+"Xx"))
@@ -55,8 +54,47 @@ def escolhas_(esc, esc1, esc2, esc3, y_pos, x_pos):
         print(term.bold("xX"+"="*25+"Xx"))
     y_pos += 1
 
+class Cores:
+    PRETO = '\033[30m'
+    VERMELHO = '\033[31m'
+    VERDE = '\033[32m'
+    AMARELO = '\033[33m'
+    AZUL = '\033[34m'
+    MAGENTA = '\033[35m'
+    CIANO = '\033[36m'
+    CINZA_CLARO = '\033[37m'
+    CINZA_ESCURO = '\033[90m'
+    VERMELHO_CLARO = '\033[91m'
+    FUNDO_PRETO = '\033[40m'
+    FUNDO_VERDE = '\033[42m'
+    FUNDO_BRANCO = '\033[47m'
+    FUNDO_MARROM = '\033[48;5;94m'
+    CLEAR = '\033[H\033[J'
+    RESET = '\033[0m'
+    BRILHO = '\033[1m'
+    INVERTER = '\033[7m'
+C = Cores
+
 class art_ascii:
     def __init__(self):
+        self.montaha =r""" **          *
+    /\\    /\\    ()   ()
+   /-_\\  /-_\\  (__) (__) 
+  /    \\/    \\     
+ /      \\     \\  (+)
+/        \\     \\  |
+"""
+        self.agua = r"""=-=-=-=-=-=-=-=-=-=-=-=-
+ ~~~     ~~   ~~   ~~
+  >(0) ~~    ~~   ~~ ~~
+          >(#) 
+"""
+        self.caminho = f"""(_)     /. \  ###
+ |     /   .\  #### (_)
+.  .  / :    \       |
+. . ./  :  :  \   (_)
+    / `   :    \   |
+"""
         self.titulo = r"""                        ╔╦╗┬ ┬┌─┐  ╦  ┌─┐┌─┐┌┬┐
                          ║ ├─┤├┤   ║  ├─┤└─┐ │
                          ╩ ┴ ┴└─┘  ╩═╝┴ ┴└─┘ ┴
@@ -65,6 +103,13 @@ class art_ascii:
                         ╚═╝┴└─└─┘└─┘┴ ┴─┴┘└─┘
 """
         self.linha = "xX"+"="*30+"Xx"
+        self.mini_mapa = """======================================
+|.........................V..........|
+|....................................|
+|......................####..........|
+|.~~~~.................##............|
+|.~~.................................|
+======================================"""
         self.necro = r""" (\.   \      ,/)
   \(   |\     )/
   //\  | \   /\\
@@ -123,8 +168,7 @@ class art_ascii:
  )_//`__>> |
    #   #`  | 
 """
-        self.vila1 = r"""
-    ~         ~~          __        
+        self.vila1 = r"""    ~         ~~          __        
        _T      .,,.    ~--~ ^^  
  ^^   // \                    ~ 
       ][O]    ^^      ,-~ ~     
@@ -134,7 +178,8 @@ __/_  /   \ ______/ ''   /'\_,__
 ; '/__\,.--';|   |[] .-.| O{ _ }
 :' |  | []  -|   ''--:.;[,.'\,/ 
 '  |[]|,.--'' '',   ''-,.    |  
-  ..    ..-''    ;       ''. '  """
+  ..    ..-''    ;       ''. '  
+"""
         self.farol = r""" . _  .    .__  .  .  __,--'                 
   (_)    ' /__\ __,--'                       
 '  .  ' . '| o|'                             
@@ -196,4 +241,5 @@ __/_  /   \ ______/ ''   /'\_,__
                 \##'
 
 """
+
 art = art_ascii()

@@ -2,9 +2,10 @@ from classe_arts import draw_window, term, clear
 import random, time, string
 from classe_do_jogador import jogador
 from classe_do_inimigo import inimigo
+from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musica
 from classe_arts import art_ascii
 ascii = art_ascii()
-player_b = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro)
+player_b = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin=0)
 inimigo_b = inimigo(nome="", hp_max=0, atk=0, niv=0, xp=0, defesa=0, gold=0, art_ascii="",atk1="",atk2="")
 
 def seleção_inimigo():
@@ -34,6 +35,8 @@ def seleção_inimigo():
     return random.choice(inimigos)
 
 def batalha(player_b, inimigo_b):
+    parar_musica()
+    escolher_e_tocar_musica("Menu_som_baia.mp3")
     inimigo_b = seleção_inimigo()
     with term.fullscreen():
         while True:
@@ -78,6 +81,7 @@ def batalha(player_b, inimigo_b):
                     player_b.buff_atk = 0
                     player_b.buff_def = 0
                     player_b.add_xp(inimigo_b.xp)
+                    parar_musica()
                     return True
                 inimigo_b.ataque_selec(player_b, x_janela=31, y_janela=17)
                 with term.location(x=x_jogador+32, y=7):
@@ -86,5 +90,6 @@ def batalha(player_b, inimigo_b):
                     with term.location(x=x_jogador+32, y=7):
                         print(f"{inimigo_b.nome} venceu a batalha!")
                     time.sleep(3)
+                    parar_musica()
                     return False
                 
