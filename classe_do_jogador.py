@@ -26,8 +26,8 @@ class jogador:
         self.rodar_jogo = False
         self.aleatorio = 75
         self.art_player = art_player
-        self.x = 0
-        self.y = 0
+        self.x_mapa = 0
+        self.y_mapa = 0
         self.classe= {
             "Guerreiro":None,
             "Mago":None,
@@ -143,7 +143,7 @@ class jogador:
         menu = "[1]Status [2]Inventario\n[3]Magias [4]Save\n[5]Sair   [6]Sair do jogo"
         herd = 6
         draw_window(term, x=x_janela, y=y_janela, width=30,height=herd, text_content=menu)
-        with term.location(x=x_janela+1, y=herd-2):
+        with term.location(x=x_janela+1, y=herd+y_janela-2):
             escolha = input(">")
         if escolha == "1":
             self.status(x_janela=x_janela, y_janela=y_janela+6)
@@ -441,7 +441,7 @@ class jogador:
         with term.location(x=x_pos, y=y_pos+3):
             print("[3] Sair da loja")
         with term.location(x=x_pos, y=y_pos+4):
-            escolha = input("> ")
+            escolha = input(">")
         if escolha == "1":
             self.comprar_itens(x_m=x_pos+26, y_m=y_pos, herd=7, x_l =x_loq+25, y_l=y_loq)
         elif escolha == "2":

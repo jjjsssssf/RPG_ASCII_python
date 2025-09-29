@@ -42,7 +42,6 @@ def batalha(player_b, inimigo_b):
         while True:
             print(term.clear)
             x_jogador = 30
-            y_jogador = 0
             inimigo_b.status_art(x_janela=31, y_janela=0)
             player_b.status_batalha_art(x_janela=0, y_janela=0)
             acoes = "[1]Atacar\n[2]Magias\n[3]Inventario\n[4]Fugir\n"
@@ -57,6 +56,7 @@ def batalha(player_b, inimigo_b):
                     print(term.bold_red("Você fugiu da batalha."))
                     player_b.buff_atk = 0
                     player_b.buff_def = 0
+                parar_musica()
                 time.sleep(2)
                 return True
             elif escolha == "1":
@@ -92,4 +92,4 @@ def batalha(player_b, inimigo_b):
                     time.sleep(3)
                     parar_musica()
                     return False
-                
+             

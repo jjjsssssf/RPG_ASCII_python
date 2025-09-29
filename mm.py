@@ -5,7 +5,7 @@ tocando_musica = False
 def tocar_musica(caminho_musica):
     global tocando_musica
     pygame.mixer.music.load(caminho_musica)
-    pygame.mixer.music.play(-1)  # -1 = loop infinito
+    pygame.mixer.music.play(-1)
     tocando_musica = True
 def escolher_e_tocar_musica(caminho_musica):
     parar_musica()
