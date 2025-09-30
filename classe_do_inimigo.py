@@ -71,7 +71,6 @@ class inimigo:
         herd = 4
         draw_window(term, x_janela, y_janela, width=len(mensagem)-6, height=herd, text_content=mensagem)
 
-
     def ataque_selec(self, alvo, x_janela, y_janela):
         atk = ["atk1", "atk2"]
         atk_ = random.choice(atk)
