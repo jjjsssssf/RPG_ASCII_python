@@ -43,7 +43,7 @@ def menu_inicial(x_l, y_l):
                 art_player=skin,
                 skin=cor_final
             )
-            mini_mapa(x_l=31, y_l=0, player=jj, ascii=ascii)
+            mini_mapa(x_l=0, y_l=8, player=jj, ascii=ascii, enimiy=ee)
 
         elif escolha == "2":
             draw_window(term, x=x_l, y=y_l, width=90, height=24, text_content=menu_art)
@@ -129,6 +129,5 @@ def mostrar_mensagem(x, y, mensagem):
     with term.location(x, y):
         print(mensagem)
     time.sleep(2)
-
 
 menu_inicial(x_l=0, y_l=0)

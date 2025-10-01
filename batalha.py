@@ -92,4 +92,3 @@ def batalha(player_b, inimigo_b):
                     time.sleep(3)
                     parar_musica()
                     return False
-             
