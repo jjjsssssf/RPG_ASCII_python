@@ -2,13 +2,14 @@ from collections import defaultdict
 
 class Item:
     """Representa um item no jogo."""
-    def __init__(self, nome, tipo, bonus_hp=0, bonus_mana=0, bonus_atk=0, bonus_def=0, bonus_atk_mana=0, preco=0, slot_equip=None, vendivel=True, comprável=True):
+    def __init__(self, nome, tipo, bonus_hp=0, bonus_stm = 0,bonus_mana=0, bonus_atk=0, bonus_def=0, bonus_atk_mana=0, preco=0, slot_equip=None, vendivel=True, comprável=True):
         self.nome = nome
         self.vendivel = vendivel
         self.comprável = comprável
         self.tipo = tipo
         self.bonus_hp = bonus_hp
-        self.bonus_mana = bonus_mana 
+        self.bonus_mana = bonus_mana
+        self.bonus_stm = bonus_stm
         self.bonus_atk = bonus_atk
         self.preco = preco
         self.bonus_atk_mana = bonus_atk_mana
@@ -22,6 +23,7 @@ TODOS_OS_ITENS = {
     "Espada": Item(nome="Espada", tipo="Equipavel", preco=100, bonus_atk=5, slot_equip="m_pri", comprável=False),
     "Poção de Cura": Item(nome="Poção de Cura", tipo="Consumivel", preco=50, bonus_hp=20),
     "Elixir": Item(nome="Elixir", tipo="Consumivel", preco=50, bonus_mana=20),
+    "Suco": Item(nome="Suco", tipo="Consumivel", preco=50, bonus_stm=20),
     "Cura Total":Item(nome="Cura Total", tipo="Consumivel", preco=1000, bonus_hp=50, bonus_mana=50),
     "Peitoral de Ferro": Item(nome="Peitoral de Ferro", tipo="Equipavel", preco=150, bonus_def=10, slot_equip="p_pet"),
     "Escudo": Item(nome="Escudo", tipo="Equipavel", preco=100, bonus_def=5, slot_equip="m_seg"),

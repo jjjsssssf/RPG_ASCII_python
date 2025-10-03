@@ -92,3 +92,62 @@ def batalha(player_b, inimigo_b):
                     time.sleep(3)
                     parar_musica()
                     return False
+
+def batalha_cut(player_b, inimigo_b):
+    parar_musica()
+    escolher_e_tocar_musica("Menu_som_baia.mp3")
+    with term.fullscreen():
+        while True:
+            print(term.clear)
+            x_jogador = 30
+            inimigo_b.status_art(x_janela=31, y_janela=0)
+            player_b.status_batalha_art(x_janela=0, y_janela=0)
+            acoes = "[1]Atacar\n[2]Magias\n[3]Inventario\n[4]Fugir\n"
+            acoes_text= acoes.count('\n')+1
+            herd = acoes_text + 2
+            draw_window(term, x=x_jogador+32, y=0, width=25, height=herd, title="Ações",text_content=acoes)
+            with term.location(x=x_jogador+33, y=5):
+                escolha = input(">")
+            acao_valida = False
+            if escolha == "4":
+                with term.location(x=x_jogador+32, y=7):
+                    print(term.bold_red("Você fugiu da batalha."))
+                    player_b.buff_atk = 0
+                    player_b.buff_def = 0
+                parar_musica()
+                time.sleep(2)
+                return True
+            elif escolha == "1":
+                player_b.atake(inimigo_b, x_janela=0, y_janela=17)
+                acao_valida = True
+            elif escolha == "2":
+                acao_valida = player_b.menu_magias(x_menu=x_jogador+32, y_menu=7, batalha=True, alvo=inimigo_b)
+            elif escolha == "3":
+                acao_valida = player_b.inventario_(x_inv=x_jogador+32, y_inv=0, batalha=True)
+            else:
+                with term.location(x=x_jogador+32, y=7):
+                    print("Escolha inválida. Tente novamente.")
+                time.sleep(2)
+                continue            
+            if acao_valida:
+                if inimigo_b.hp <= 0:
+                    with term.location(x=x_jogador+32, y=7):
+                        print(term.clear_eol + f"{player_b.nome} venceu a batalha!")
+                    time.sleep(3)
+                    player_b.gold += inimigo_b.gold
+                    player_b.xp += inimigo_b.xp
+                    player_b.buff_atk = 0
+                    player_b.buff_def = 0
+                    player_b.add_xp(inimigo_b.xp)
+                    parar_musica()
+                    return True
+                inimigo_b.ataque_selec(player_b, x_janela=31, y_janela=17)
+                with term.location(x=x_jogador+32, y=7):
+                    input(">")
+                if player_b.hp <= 0:
+                    with term.location(x=x_jogador+32, y=7):
+                        print(f"{inimigo_b.nome} venceu a batalha!")
+                    time.sleep(3)
+                    parar_musica()
+                    return False
+

@@ -1,5 +1,5 @@
 import random, os, time, json
-from classe_arts import draw_window, term, linha_inven, linhas, linhas_batalha, clear, art_ascii
+from classe_arts import draw_window, term, linha_inven, linhas, linhas_batalha, clear, art_ascii, clear_region_a
 from classe_do_inventario import Item, TODOS_OS_ITENS, magias, TODAS_AS_MAGIAS
 from collections import defaultdict
 art= art_ascii()
@@ -18,6 +18,7 @@ class jogador:
         self.buff_def = 0
         self.intt = intt
         self.niv = niv
+        self.ponto = 0
         self.xp_max = xp_max
         self.dano_magico = d_m
         self.xp = 100
@@ -33,7 +34,7 @@ class jogador:
             "Mago":None,
             "Negromante":None
         }
-        self.inventario = [TODOS_OS_ITENS["Poção de Cura"], TODOS_OS_ITENS["Elixir"], TODOS_OS_ITENS["Poção de Cura"],TODOS_OS_ITENS["Crucifixo"]]
+        self.inventario = []
         self.locais = {
             "Vila": True,
             "Farol":None,
@@ -140,36 +141,49 @@ class jogador:
             return None
     
     def menu(self, x_janela, y_janela):
-        menu = "[1]Status [2]Inventario\n[3]Magias [4]Save\n[5]Sair   [6]Sair do jogo"
+        menu = "[1]Status [2]Inventario\n[3]Magias [4]Save"
         herd = 6
+        clear()
         draw_window(term, x=x_janela, y=y_janela, width=30,height=herd, text_content=menu)
         with term.location(x=x_janela+1, y=herd+y_janela-2):
             escolha = input(">")
         if escolha == "1":
             self.status(x_janela=x_janela, y_janela=y_janela+6)
         elif escolha == "2":
-            clear()
-            self.inventario_(x_inv=0, y_inv=0, batalha=False)
+            self.inventario_(x_inv=x_janela, y_inv=y_janela+6, batalha=False)
         elif escolha == "3":
-            clear()
             self.menu_magias(x_menu=0, y_menu=0, batalha=False, alvo=None)
         elif escolha == "4":
             self.save_game(filename=f"Demo.json")
-        elif escolha == "5":
-            return False
-        elif escolha == "6":
-            exit()
+
+    def barra_de_vida(self, x_l, y_l, largura=25):
+        proporcao = max(0, min(self.hp / self.hp_max, 1))
+        preenchido = int(proporcao * largura)
+        vazio = largura - preenchido
+        barra = (
+            term.bold_green("=") * preenchido +
+            term.green("=") * vazio +
+            term.normal
+        )
+        porcentagem = int(proporcao * 100)
+
+        proporcao_ = max(0, min(self.stm / self.stm_max, 1))
+        preenchido_ = int(proporcao_ * largura) 
+        vazio_ = largura - preenchido_
+        barra_ = (
+            term.bold_yellow("=") * preenchido_ +
+            term.yellow("=") * vazio_ +
+            term.normal
+        )
+        porcentagem_ = int(proporcao_ * 100)
+        with term.location(x=x_l, y=y_l):
+            print(f"HP[{barra}] {porcentagem}%")
+        with term.location(x=x_l, y=y_l+1):
+            print(f"ST[{barra_}] {porcentagem_}%")
+        with term.location(x=x_l, y=y_l+2):
+            print(f"X[{term.bold_blue(str(self.x_mapa))}] - Y[{term.bold_red(str(self.y_mapa))}]")
 
     def status(self, x_janela, y_janela):
-        manager = ""
-        if self.classe["Mago"] == True:
-            manager = "Mago"
-        elif self.classe["Guerreiro"] == True:
-            manager = "Guerreiro"
-        elif self.classe["Negromante"] == True:
-            manager = "Necromante"
-        else:
-            manager = "Null"
         draw_window(term, x=x_janela, y=y_janela, width=31, height=8)
         with term.location(x=x_janela+1, y=y_janela+1):
             print(f"Nome: [{term.italic_gray(str(self.nome))}] Nivel: [{term.yellow(str(self.niv))}]") 
@@ -180,10 +194,11 @@ class jogador:
         with term.location(x=x_janela+1, y=y_janela+4):
             print(f"AT: [{term.bold_red(str(self.atk))}-{term.red(str(self.buff_atk))}] DF: [{term.bold_cyan(str(self.defesa))}-{term.cyan(str(self.buff_def))}]")
         with term.location(x=x_janela+1, y=y_janela+5):
-            print(f"AT: [{term.bold_blue(str(self.intt))}] Classe: [{term.bold_cyan(str(manager))}]")
+            print(f"IT: [{term.bold_blue(str(self.intt))}]")
         self.status_art(x_janela=x_janela+32, y_janela=y_janela)
         with term.location(x=x_janela+1, y=y_janela+6):
             input(">")
+    
     def status_art(self ,x_janela, y_janela):
         art_player = self.art_player
         draw_window(term, x=x_janela, y=y_janela, width=31, height=11, text_content=art_player)
@@ -212,18 +227,79 @@ class jogador:
             self.xp_max = int(self.xp_max * 1.2)
             self.xp = xp_remaining
             self.niv += 1
-            self.hp_max += 10
-            self.stm_max += 10
-            self.mana_max += 10
-            self.atk += 5
-            self.dano_magico += 5
-            self.defesa += 5
-            self.hp = self.hp_max
+            self.ponto += 5
             self.stm = self.stm_max
-            self.mana = self.mana_max
             time.sleep(1)
         print(f"Você ganhou {xp_ganho} de XP. Total: {self.xp}/{self.xp_max}")
         time.sleep(2)
+
+    def up(self, x, y,werd,herd):
+        while True:
+            clear_region_a(start_y=herd, end_y=15, width=werd)
+            mensagem = f"""Pontos: [{self.ponto}]
+HP: [{self.hp_max}]
+MP: [{self.stm_max}]
+ATK: [{self.atk}]
+DEF: [{self.defesa}]
+MG: [{self.mana_max}]
+MA: [{self.dano_magico}]
+INT: [{self.intt}]
+Digite o Nome do Status que
+Deseja Melhorar. diter sair
+para sair"""
+            draw_window(term, x=x, y=y, width=werd, height=herd, text_content=mensagem)
+            if self.ponto >= 1:
+                with term.location(x=werd+5, y=herd-5):
+                    up_ = input(">")
+            else:
+                with term.location(x=werd+5, y=herd-5):
+                    print("Você não tem Pontos")
+                    input()
+                    break
+            if up_ == "Sair":
+                break
+            elif up_ == "HP":
+                with term.location(x=werd+4, y=herd-5):
+                    print(f"Você Melhorou seu HP")
+                time.sleep(2)
+                self.ponto -= 1
+                self.hp_max += 3
+            elif up_ == "MP":
+                with term.location(x=werd+4, y=herd-5):
+                    print(f"Você Melhorou seu MP")
+                time.sleep(2)
+                self.ponto -= 1
+                self.stm_max += 3
+            elif up_ == "ATK":
+                with term.location(x=werd+4, y=herd-5):
+                    print(f"Você Melhorou seu ATK")
+                time.sleep(2)
+                self.ponto -= 1
+                self.atk += 3
+            elif up_ == "DEF":
+                with term.location(x=werd+4, y=herd-5):
+                    print(f"Você Melhorou seu DEF")
+                time.sleep(2)
+                self.ponto -= 1
+                self.defesa += 3
+            elif up_ == "MG":
+                with term.location(x=werd+4, y=herd-5):
+                    print(f"Você Melhorou seu Mg")
+                time.sleep(2)
+                self.ponto -= 1
+                self.mana_max += 3
+            elif up_ == "MP":
+                with term.location(x=werd+4, y=herd-5):
+                    print(f"Você Melhorou seu MA")
+                time.sleep(2)
+                self.ponto -= 1
+                self.dano_magico += 3
+            elif up_ == "INT":
+                with term.location(x=werd+4, y=herd-5):
+                    print(f"Você Melhorou seu INT")
+                time.sleep(2)
+                self.ponto -= 1
+                self.intt += 3
 
     def menu_magias(self, x_menu, y_menu, batalha, alvo):
         text_content = ""
@@ -322,7 +398,7 @@ class jogador:
             time.sleep(1)
         herd = 4
         draw_window(term, x_janela, y_janela, width=len(mensagem)-5, height=herd, text_content=mensagem)
-
+    
     def inventario_(self, x_inv, y_inv, batalha):
         text_content = ""
         contagem_itens = defaultdict(int)
@@ -390,6 +466,17 @@ class jogador:
                 self.mana += item.bonus_mana
                 if self.mana > self.mana_max:
                     self.mana = self.mana_max
+                self.inventario.remove(item)
+                sucesso = True
+        elif item.nome == "Suco":
+            if self.stm >= self.stm_max:
+                text_content = "Sua Stamina já está no máximo!"
+                sucesso = False
+            else:
+                text_content = "Você bebeu um suco."
+                self.stm += item.bonus_stm
+                if self.stm > self.stm_max:
+                    self.stm = self.stm_max
                 self.inventario.remove(item)
                 sucesso = True
         herd = 3

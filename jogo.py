@@ -1,9 +1,10 @@
 from classe_do_jogador import jogador
 from classe_do_inimigo import inimigo
 import time, random, os
-from batalha import batalha
-from classe_arts import draw_window,term, clear, art_ascii, Cores, mini_mapa_, dialogos
+from batalha import batalha, batalha_cut
+from classe_arts import draw_window,term, clear, art_ascii, Cores, mini_mapa_, dialogos, clear_region_a
 from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musica
+from classe_do_inventario import TODOS_OS_ITENS, Item
 mapas = mini_mapa_()
 dialogo = dialogos()
 ascii = art_ascii()
@@ -33,13 +34,13 @@ def vila():
     elif escolha == "N":
         return
 
-def mini_mapa(x_l, y_l, player, ascii, mapas_, camera_w, camera_h):
+def mini_mapa(x_l, y_l, player,ascii, mapas_, camera_w, camera_h, x_p, y_p, menager):
     raw_map_lines = mapas_
     max_width = max(len(l) for l in raw_map_lines if l.strip())
     mapa_art = [l.ljust(max_width) for l in raw_map_lines if l.strip()]
-    player.x_mapa = 3
-    player.y_mapa = 4
-    OBSTACULOS = ['=', '|', " ", "║", "_", "-"]
+    player.x_mapa = x_p
+    player.y_mapa = y_p
+    OBSTACULOS = ['#', '.']
     INTERACOES = {'v':vila}
     feedback_message = ""
     MAP_WIDTH = max_width
@@ -71,21 +72,19 @@ def mini_mapa(x_l, y_l, player, ascii, mapas_, camera_w, camera_h):
         mini_mapa_render = "\n".join(janela_mapa)
         draw_window(term, x=x_l, y=y_l, width=CAMERA_WIDTH + 4, height=CAMERA_HEIGHT + 2, text_content=mini_mapa_render)
         CORES = {
-            'X': term.bold_white_on_red,
-            '@': C.VERMELHO_CLARO,
-            ';': C.VERDE,
-            '`': C.AMARELO,
             '.': C.VERDE,
-            '~': C.AZUL,
-            '#': C.CINZA_ESCURO,
-            'v': f"{C.FUNDO_BRANCO+C.CIANO}",
-            '*': C.AMARELO,
-            '^': C.VERDE,
-            '&': C.CINZA_CLARO,
-            ':': f"{C.AMARELO+C.BRILHO}",
-            '"': C.BRILHO
+            ':': term.black,
+            'O': term.bold_blue_on_black,
+            '@': term.bold_red_on_black,
+            'B': term.bold_brown_on_brown,
+            '#': term.bold_magenta_on_black,
+            'X': term.bold_red_on_white,
+            'P': term.blue_on_white
         }
         draw_window(term, x=x_l, y=y_l, width=CAMERA_WIDTH + 4, height=CAMERA_HEIGHT + 2)
+        draw_window(term, x=x_l+CAMERA_WIDTH+5, y=y_l, width=CAMERA_WIDTH+2, height=CAMERA_HEIGHT+2, text_content=menager)
+        player.barra_de_vida(x_l+CAMERA_WIDTH+6, y_l=CAMERA_HEIGHT-8)
+
         for j, linha in enumerate(mapa_art[camera_y:camera_y + CAMERA_HEIGHT]):
             for i, ch in enumerate(linha[camera_x:camera_x + CAMERA_WIDTH]):
                 cor = CORES.get(ch, "")
@@ -97,49 +96,60 @@ def mini_mapa(x_l, y_l, player, ascii, mapas_, camera_w, camera_h):
             caractere_atual = mapa_art[player.y_mapa][player.x_mapa]
         except IndexError:
             caractere_atual = ' '
-        if caractere_atual == '.':
-            draw_window(term, x=x_l, y=y_l - 8, width=30, height=8, title="Estrada", text_content=ascii.caminho)
-            if random.randint(1, 100) < 25:
-                batalha(player_b=player, inimigo_b=enimy)
-                escolher_e_tocar_musica("music_back.mp3")
-        elif caractere_atual == '~':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Lago", text_content=ascii.agua)
-        elif caractere_atual == '#':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Montanha", text_content=ascii.montaha)
-        elif caractere_atual == 'v':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Vila", text_content=ascii.vila1)
-        elif caractere_atual == '*':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Deserto", text_content=ascii.deserto)
-        elif caractere_atual == '^':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Floreta", text_content=ascii.floresta)
-        elif caractere_atual == '&':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Topo da Montanha", text_content=ascii.montaha)
-        elif caractere_atual == ':':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Praia", text_content=ascii.praia)
-        elif caractere_atual == '`':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Caminho", text_content=ascii.caminho2)
-        elif caractere_atual == '"':
-            draw_window(term, x=x_l, y=y_l - 8, width=31, height=8, title="Floresta de Neve", text_content=ascii.neve)
-        elif caractere_atual == ';':
-            def matar():
-                with term.location(x=10, y=0):
-                    print("Você deseja matar esse inocente? (S/N)")
-                with term.location(x=10, y=1):
-                    esc = input(">").strip().upper()
-                if esc == "S":
-                    novo_char = "X"
-                    linha_antiga = mapa_art[player.y_mapa]
-                    mapa_art[player.y_mapa] = (
-                        linha_antiga[:player.x_mapa] + 
-                        novo_char + 
-                        linha_antiga[player.x_mapa + 1:]
-                    )
-                    with term.location(x=10, y=2):
-                        print("Você matou o inocente...")
-                else:
-                    with term.location(x=10, y=2):
-                        print("Você poupou o inocente.")
-            matar()
+        if caractere_atual == ':':
+            with term.location(x=x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-1):
+                print("Você está Em uma sala")
+        elif caractere_atual == "@":
+            musumano = inimigo(nome='Muçumano', hp_max=50, atk=5, niv=1, xp=50, defesa=0, gold=10, art_ascii=ascii.musumano, atk1="Avansar", atk2="Espada")
+            batalha_cut(player_b=player, inimigo_b=musumano)
+            if musumano.hp <= 0:
+                novo_char = "X"
+                linha_antiga = mapa_art[player.y_mapa]
+                mapa_art[player.y_mapa] = (
+                    linha_antiga[:player.x_mapa] + 
+                    novo_char + 
+                    linha_antiga[player.x_mapa + 1:]
+                )
+        elif caractere_atual == "O":
+            with term.location(x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-3):
+                print("Você deseja ajudar seu amigo:S/N")
+            with term.location(x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-2):
+                escolha = input(">")
+            if escolha == "S":
+                novo_char = 'E'
+                linha_antiga = mapa_art[player.y_mapa]
+                mapa_art[player.y_mapa] = (
+                    linha_antiga[:player.x_mapa] + 
+                    novo_char + 
+                    linha_antiga[player.x_mapa + 1:]
+                )
+        elif caractere_atual == "B":
+            with term.location(x=x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-2):
+                print("Você Encontrou um Bau")
+            itens = 'Espada', 'Escudo', 'Suco', 'Poção de Cura'
+            selec = random.choice(itens)
+            with term.location(x=x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-1):
+                print(f"Você Conseguio um {selec}")
+            player.inventario.append(TODOS_OS_ITENS[f"{selec}"])
+            novo_char = 'b'
+            linha_antiga = mapa_art[player.y_mapa]
+            mapa_art[player.y_mapa] = (
+                linha_antiga[:player.x_mapa] + 
+                novo_char + 
+                linha_antiga[player.x_mapa + 1:]
+            )
+        elif caractere_atual == "P":
+            def inimigos_restantes():
+                return any('@' in linha for linha in mapa_art)
+            if inimigos_restantes():
+                with term.location(x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-2):
+                    print("Você ainda não derrotou todos os inimigos!")
+            else:
+                with term.location(x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-2):
+                    print(f"Para bens {player.nome}")
+                with term.location(x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-1):
+                    print(f"conseguimos matar esses vermes malditos")
+                break
         if feedback_message:
             with term.location(0, CAMERA_HEIGHT + y_l + 4):
                 print(term.red(feedback_message))
@@ -166,8 +176,12 @@ def mini_mapa(x_l, y_l, player, ascii, mapas_, camera_w, camera_h):
         elif movi == "d":
             novo_x += quant
         elif movi == "menu":
-            player.menu(x_janela=0, y_janela=8)
+            player.menu(x_janela=0, y_janela=0)
             continue
+        elif movi == "sair":
+            exit()
+        elif movi == "up":
+            player.up(x=x_l+CAMERA_WIDTH+5, y=y_l,werd=CAMERA_WIDTH+2, herd=CAMERA_HEIGHT+2)
         else:
             feedback_message = f"Comando '{movi}' inválido. Use w/a/s/d."
             continue
@@ -179,26 +193,26 @@ def mini_mapa(x_l, y_l, player, ascii, mapas_, camera_w, camera_h):
                 if caractere in INTERACOES:
                     INTERACOES[caractere]()
 
-
 def cutcenes(mansagem, x, y, witr, herd):
-
     draw_window(term, x=x, y=y, width=witr, height=herd, text_content=mansagem)
 
-def jogo():
+def jogo(player_j, ascii_j, x, y):
     clear()
-    draw_window(term, x=10, y=0, width=52, height=11, text_content=ascii.cidade_em_caos)
-    cutcenes(mansagem=dialogo.cutsine_inicil, x=10, y=11, witr=52, herd=8)
+    draw_window(term, x=x, y=y, width=52, height=11, text_content=ascii.cidade_em_caos)
+    cutcenes(mansagem=dialogo.cutsine_inicil, x=x, y=y+11, witr=52, herd=8)
     input()
     clear()
-    draw_window(term, x=10, y=0, width=52, height=11, text_content=ascii.cidade_em_caos)
-    cutcenes(mansagem=dialogo.descricao, x=10, y=11, witr=52, herd=8)
+    draw_window(term, x=x, y=y, width=52, height=11, text_content=ascii.cidade_em_caos)
+    cutcenes(mansagem=dialogo.descricao, x=x, y=y+11, witr=52, herd=8)
     input()
     clear()
-    draw_window(term, x=10, y=0, width=52, height=11, text_content=ascii.cidade_em_caos2)
-    cutcenes(mansagem=dialogo.descricao2, x=10, y=11, witr=52, herd=8)
+    draw_window(term, x=x, y=y, width=52, height=11, text_content=ascii.cidade_em_caos2)
+    cutcenes(mansagem=dialogo.descricao2, x=x, y=y+11, witr=52, herd=8)
     input()
-    mini_mapa(x_l=0, y_l=8, player=player, ascii=ascii, mapas_=mapas.mini_mapa_tuturial.split('\n'), camera_w=30, camera_h=8)
+    menager = """Você Está no castelo de Muçumanos
+Derroteos e depois ajude seus
+amigo e converse com o Padre"""
+    clear()
+    mini_mapa(x_l=0, y_l=0, player=player_j, ascii=ascii_j, mapas_=mapas.mini_mapa_tuturial.split('\n'), camera_w=35, camera_h=15, x_p=5, y_p=1, menager=menager)
 
-    
-
-jogo()
+"jogo(player_j=player, ascii_j=ascii, x=10, y=0)"

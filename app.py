@@ -1,5 +1,4 @@
-from ast import arg
-from jogo import mini_mapa
+from jogo import mini_mapa, jogo
 from classe_arts import draw_window, term, clear
 import random, time, string
 from classe_do_jogador import jogador
@@ -30,20 +29,20 @@ def menu_inicial(x_l, y_l):
             skin, caractere, cor_final = escolher_personagem(x_l, y_l)
             jj = jogador(
                 nome=nome,
-                hp_max=100,
+                hp_max=50,
                 atk=10,
                 niv=1,
                 xp_max=100,
-                defesa=5,
+                defesa=0,
                 gold=0,
                 stm_max=100,
-                intt=5,
+                intt=0,
                 mn_max=50,
                 d_m=15,
                 art_player=skin,
                 skin=cor_final
             )
-            mini_mapa(x_l=0, y_l=8, player=jj, ascii=ascii, enimiy=ee)
+            jogo(player_j=jj, ascii_j=ascii, x=10, y=0)
 
         elif escolha == "2":
             draw_window(term, x=x_l, y=y_l, width=90, height=24, text_content=menu_art)
