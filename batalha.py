@@ -8,39 +8,65 @@ ascii = art_ascii()
 player_b = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin=0)
 inimigo_b = inimigo(nome="", hp_max=0, atk=0, niv=0, xp=0, defesa=0, gold=0, art_ascii="",atk1="",atk2="")
 
-def seleção_inimigo():
-    if player_b.niv <= 5 or player_b.andar <= 5:
-        hp_max = random.randint(50, 100)
-        atk = random.randint(5, 15)
-        niv = random.randint(1, 5)
-        xp = random.randint(50, 300)
-        defesa = random.randint(5, 15)
-        gold = random.randint(20, 250)
-    elif player_b.niv >= 6 or player_b.andar >= 10:
-        hp_max = random.randint(200, 350)
-        atk = random.randint(10, 25)
-        niv = random.randint(6, 12)
-        xp = random.randint(300, 600)
-        defesa = random.randint(10, 25)
-        gold = random.randint(50, 280)
-    
-    
-    inimigos = [
-        inimigo(nome="Lobo", hp_max=hp_max, atk=atk, niv=niv, xp=xp, defesa=defesa, gold=gold, art_ascii=ascii.lobo, atk1="Tridente", atk2="Bola de Fogo"),
-        inimigo(nome="Lobo", hp_max=hp_max, atk=atk, niv=niv, xp=xp, defesa=defesa, gold=gold, art_ascii=ascii.lobo1, atk1="Tridente", atk2="Bola de Fogo"),
-        inimigo(nome="Esqueleto", hp_max=hp_max, atk=atk, niv=niv, xp=xp, defesa=defesa, gold=gold, art_ascii=ascii.esqueleto, atk1="Ossada", atk2="Espadada"),
-        inimigo(nome="Demonio", hp_max=hp_max, atk=atk, niv=niv, xp=xp, defesa=defesa, gold=gold, art_ascii=ascii.demoni1, atk1="Tridente", atk2="Bola de Fogo"),
-        inimigo(nome="Demonio", hp_max=hp_max, atk=atk, niv=niv, xp=xp, defesa=defesa, gold=gold, art_ascii=ascii.demoni0, atk1="Tridente", atk2="Bola de Fogo"),
-    ]
-    return random.choice(inimigos)
+def seleção_inimigo(num = None):
+    nome = ""
+    art_ascii = ""
+    atk1 = ""
+    atk2 = ""
+    hp_max = atk = niv = xp = defesa = gold = 0
+    if num == 1:
+        nomes = ['Esqueleto', 'Demonio', 'Samurai']
+        nome = random.choice(nomes)
+        if nome == 'Esqueleto':
+            art_ascii = ascii.esqueleto
+            atk1 = "Soco"
+            atk2 = "Ossada"
+        elif nome == 'Demonio':
+            art_ascii = ascii.demoni0 
+            atk1 = "Soco"
+            atk2 = "Tridente"
+        elif nome == "Samurai":
+            art_ascii = ascii.demoni1
+            atk1 = "Corte"
+            atk2 = "Espadada"
 
-def batalha(player_b, inimigo_b):
+        if player_b.niv <= 5:
+            hp_max = random.randint(50, 100)
+            atk = random.randint(5, 15)
+            niv = random.randint(1, 5)
+            xp = random.randint(50, 300)
+            defesa = random.randint(5, 15)
+            gold = random.randint(20, 250)
+        else:
+            hp_max = random.randint(200, 350)
+            atk = random.randint(10, 25)
+            niv = random.randint(6, 12)
+            xp = random.randint(300, 600)
+            defesa = random.randint(10, 25)
+            gold = random.randint(50, 280)
+    else:
+        return None
+
+    return inimigo(
+        nome=nome,
+        hp_max=hp_max,
+        atk=atk,
+        niv=niv,
+        xp=xp,
+        defesa=defesa,
+        gold=gold,
+        art_ascii=art_ascii,
+        atk1=atk1,
+        atk2=atk2
+    )
+
+def batalha(player_b,inimigo_b, numero):
     parar_musica()
     escolher_e_tocar_musica("Menu_som_baia.mp3")
-    inimigo_b = seleção_inimigo()
+    inimigo_b = seleção_inimigo(num=numero)
     with term.fullscreen():
         while True:
-            print(term.clear)
+            clear()
             x_jogador = 30
             inimigo_b.status_art(x_janela=31, y_janela=0)
             player_b.status_batalha_art(x_janela=0, y_janela=0)
@@ -65,7 +91,7 @@ def batalha(player_b, inimigo_b):
             elif escolha == "2":
                 acao_valida = player_b.menu_magias(x_menu=x_jogador+32, y_menu=7, batalha=True, alvo=inimigo_b)
             elif escolha == "3":
-                acao_valida = player_b.inventario_(x_inv=x_jogador+32, y_inv=0, batalha=True)
+                acao_valida = player_b.inventario_(x=x_jogador+32, y=7,werd=35, herd=9,batalha=True)
             else:
                 with term.location(x=x_jogador+32, y=7):
                     print("Escolha inválida. Tente novamente.")
@@ -92,6 +118,7 @@ def batalha(player_b, inimigo_b):
                     time.sleep(3)
                     parar_musica()
                     return False
+
 
 def batalha_cut(player_b, inimigo_b):
     parar_musica()
@@ -123,7 +150,7 @@ def batalha_cut(player_b, inimigo_b):
             elif escolha == "2":
                 acao_valida = player_b.menu_magias(x_menu=x_jogador+32, y_menu=7, batalha=True, alvo=inimigo_b)
             elif escolha == "3":
-                acao_valida = player_b.inventario_(x_inv=x_jogador+32, y_inv=0, batalha=True)
+                acao_valida = player_b.inventario_(x=x_jogador+32, y=0, werd=35, herd=0, batalha=True)
             else:
                 with term.location(x=x_jogador+32, y=7):
                     print("Escolha inválida. Tente novamente.")

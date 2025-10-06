@@ -31,6 +31,7 @@ class inimigo:
         status_art = self.art_ascii
         draw_window(term, x=x_janela, y=y_janela, width=31, height=11, text_content=status_art)
         self.status(x_janela=x_janela, y_janela=y_janela+11)
+    
     def status(self, x_janela, y_janela):
         draw_window(term, x=x_janela, y=y_janela, width=31, height=6)
         with term.location(x=x_janela+1, y=y_janela+1):

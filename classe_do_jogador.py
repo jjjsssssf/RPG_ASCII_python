@@ -29,21 +29,16 @@ class jogador:
         self.art_player = art_player
         self.x_mapa = 0
         self.y_mapa = 0
+        self.mundo = {
+            'Cemiterio':False
+        }
         self.classe= {
             "Guerreiro":None,
             "Mago":None,
             "Negromante":None
         }
         self.inventario = []
-        self.locais = {
-            "Vila": True,
-            "Farol":None,
-            "Moinho":None,
-            "Caverna":None,
-            "Mar":None,
-            "Deserto":None,
-            "Montanha":None
-        }
+
         self.mana_lit = mana_lit if mana_lit is not None else []
         self.equipa = {
             "m_pri": None,
@@ -157,48 +152,46 @@ class jogador:
             self.save_game(filename=f"Demo.json")
 
     def barra_de_vida(self, x_l, y_l, largura=25):
-        proporcao = max(0, min(self.hp / self.hp_max, 1))
-        preenchido = int(proporcao * largura)
-        vazio = largura - preenchido
-        barra = (
-            term.bold_green("=") * preenchido +
-            term.green("=") * vazio +
+        proporcao_hp = max(0, min(self.hp / self.hp_max, 1))
+        preenchido_hp = int(proporcao_hp * largura)
+        vazio_hp = largura - preenchido_hp
+        barra_hp = (
+            term.bold_green("=") * preenchido_hp +
+            term.green("=") * vazio_hp +
             term.normal
         )
-        porcentagem = int(proporcao * 100)
-
-        proporcao_ = max(0, min(self.stm / self.stm_max, 1))
-        preenchido_ = int(proporcao_ * largura) 
-        vazio_ = largura - preenchido_
-        barra_ = (
-            term.bold_yellow("=") * preenchido_ +
-            term.yellow("=") * vazio_ +
+        porcentagem_hp = int(proporcao_hp * 100)
+        proporcao_stm = max(0, min(self.stm / self.stm_max, 1))
+        preenchido_stm = int(proporcao_stm * largura) 
+        vazio_stm = largura - preenchido_stm
+        barra_stm = (
+            term.bold_yellow("=") * preenchido_stm +
+            term.yellow("=") * vazio_stm +
             term.normal
         )
-        porcentagem_ = int(proporcao_ * 100)
+        porcentagem_stm = int(proporcao_stm * 100)
+        proporcao_m = max(0, min(self.mana / self.mana_max, 1))
+        preenchido_m = int(proporcao_m * largura) 
+        vazio_m = largura - preenchido_m
+        barra_m = (
+            term.bold_magenta("=") * preenchido_m +
+            term.magenta("=") * vazio_m +
+            term.normal
+        )
+        porcentagem_m = int(proporcao_m * 100)
         with term.location(x=x_l, y=y_l):
-            print(f"HP[{barra}] {porcentagem}%")
+            print(f"HP[{barra_hp}] {porcentagem_hp}%")
         with term.location(x=x_l, y=y_l+1):
-            print(f"ST[{barra_}] {porcentagem_}%")
+            print(f"ST[{barra_stm}] {porcentagem_stm}%")
         with term.location(x=x_l, y=y_l+2):
-            print(f"X[{term.bold_blue(str(self.x_mapa))}] - Y[{term.bold_red(str(self.y_mapa))}]")
+            print(f"MG[{barra_m}] {porcentagem_m}%")
+        with term.location(x=x_l, y=y_l+3):
+            print(f"ATK: [{term.bold_red(str(self.atk))}] - DEF: [{term.bold_blue(str(self.defesa))}]")
+        with term.location(x=x_l, y=y_l+4):
+            print(f"MGA: [{term.bold_magenta(str(self.dano_magico))}] - INT: [{term.bold_gray(str(self.intt))}]")
+        with term.location(x=x_l, y=y_l+5):
+            print(f"Gold: [{term.bold_yellow(str(self.gold))}] - Nivel: [{term.bold_green(str(self.niv))}]")
 
-    def status(self, x_janela, y_janela):
-        draw_window(term, x=x_janela, y=y_janela, width=31, height=8)
-        with term.location(x=x_janela+1, y=y_janela+1):
-            print(f"Nome: [{term.italic_gray(str(self.nome))}] Nivel: [{term.yellow(str(self.niv))}]") 
-        with term.location(x=x_janela+1, y=y_janela+2):
-            print(f"HP: [{term.bold_green(str(self.hp_max))}/{term.green(str(self.hp))}] MP: [{term.bold_blue(str(self.stm_max))}/{term.blue(str(self.stm))}]")
-        with term.location(x=x_janela+1, y=y_janela+3):
-            print(f"MG: [{term.bold_magenta(str(self.mana_max))}/{term.magenta(str(self.mana))}] MA: [{term.bold_purple(str(self.dano_magico+3))}-{term.purple(str(self.dano_magico-3))}]")
-        with term.location(x=x_janela+1, y=y_janela+4):
-            print(f"AT: [{term.bold_red(str(self.atk))}-{term.red(str(self.buff_atk))}] DF: [{term.bold_cyan(str(self.defesa))}-{term.cyan(str(self.buff_def))}]")
-        with term.location(x=x_janela+1, y=y_janela+5):
-            print(f"IT: [{term.bold_blue(str(self.intt))}]")
-        self.status_art(x_janela=x_janela+32, y_janela=y_janela)
-        with term.location(x=x_janela+1, y=y_janela+6):
-            input(">")
-    
     def status_art(self ,x_janela, y_janela):
         art_player = self.art_player
         draw_window(term, x=x_janela, y=y_janela, width=31, height=11, text_content=art_player)
@@ -235,7 +228,7 @@ class jogador:
 
     def up(self, x, y,werd,herd):
         while True:
-            clear_region_a(start_y=herd, end_y=15, width=werd)
+            clear_region_a(x=x,start_y=herd, end_y=herd-1, width=werd)
             mensagem = f"""Pontos: [{self.ponto}]
 HP: [{self.hp_max}]
 MP: [{self.stm_max}]
@@ -399,13 +392,15 @@ para sair"""
         herd = 4
         draw_window(term, x_janela, y_janela, width=len(mensagem)-5, height=herd, text_content=mensagem)
     
-    def inventario_(self, x_inv, y_inv, batalha):
+    def inventario_(self, x, y, werd, herd,batalha):
         text_content = ""
         contagem_itens = defaultdict(int)
+        
         for item_obj in self.inventario:
             contagem_itens[item_obj.nome] += 1
+        
         if not self.inventario:
-            text_content = "Não tem nada no inventário."
+            text_content = "Não tem nada no inventário.\n"
         else:
             for item_nome, quantidade in contagem_itens.items():
                 item_obj = TODOS_OS_ITENS[item_nome]
@@ -413,228 +408,215 @@ para sair"""
                 if item_obj.slot_equip and self.equipa.get(item_obj.slot_equip) and self.equipa[item_obj.slot_equip].nome == item_obj.nome:
                     estado = "[Equipado]"
                 text_content += f"{item_obj.nome} (x{quantidade}) {estado}\n"
-        text_content += "Para usar/equipar um item, digite o nome dele.\nPara sair, digite 'sair'."
-        num_linhas_texto = text_content.count('\n')+1
-        herd = num_linhas_texto + 3
-        draw_window(term, x_inv, y_inv, width=45, height=herd, title="Inventário", text_content=text_content)
-        x_input = x_inv + 2
-        y_input = y_inv + herd - 2
-        y_acao = y_inv
-        with term.location(x_input, y_input):
-            escolha = input(">")
-        if escolha.lower() == "sair":
-            return False
-        if batalha == True:
+        
+        text_content += "Digite o nome do item para usar\ndigite 'sair' para sair"
+        num_linhas_texto = text_content.count('\n') + 1
+        altura_janela = num_linhas_texto + 4
+        while True:
+            clear_region_a(x=x,start_y=altura_janela, end_y=altura_janela-1, width=werd)
+            draw_window(term, x, y, width=werd, height=altura_janela, title="Inventário", text_content=text_content)
+            x_input = x + 2
+            y_input = y + altura_janela - 3
+            with term.location(x_input, y_input):
+                escolha = input(">")
+            if escolha.lower() == "sair":
+                return False
             if escolha in TODOS_OS_ITENS and escolha in contagem_itens:
                 item_escolhido = TODOS_OS_ITENS[escolha]
-                if item_escolhido.tipo == "Consumivel":
-                    return self.usar_consumivel(item_escolhido, x_inv, y_inv + herd)
-                elif item_escolhido.tipo == "Equipavel":
-                    mensagem = "Você Não Pode usar um\nequipavel em batalha"
-                    draw_window(term, x=x_inv, y=y_acao+herd, width=25, height=4,text_content=mensagem)
-                    time.sleep(4)
-        elif batalha == False:
-            if escolha in TODOS_OS_ITENS and escolha in contagem_itens:
-                item_escolhido = TODOS_OS_ITENS[escolha]
-                if item_escolhido.tipo == "Consumivel":
-                    self.usar_consumivel(item_escolhido, x_inv, y_acao+herd)
-                elif item_escolhido.tipo == "Equipavel":
-                    self.gerenciar_equipavel(item_escolhido, x_inv, y_acao+herd)             
-        else:
-            return False
+                if batalha:
+                    if item_escolhido.tipo == "Consumivel":
+                        return self.usar_consumivel(item_escolhido, x, y + altura_janela + 1, werd)
+                    elif item_escolhido.tipo == "Equipavel":
+                        mensagem = "Você não pode usar\num equipamento em batalha!"
+                        draw_window(term, x=x, y=y + altura_janela, width=werd, height=4, text_content=mensagem)
+                        time.sleep(3)
+                else:
+                    if item_escolhido.tipo == "Consumivel":
+                        self.usar_consumivel(item_escolhido, x, y + altura_janela, werd)
+                    elif item_escolhido.tipo == "Equipavel":
+                        self.gerenciar_equipavel(item_escolhido, x, y + altura_janela, werd)
 
-    def usar_consumivel(self, item, x_janela, y_janela):
-        text_content = ""
-        sucesso = False
+    def usar_consumivel(self, item, x_janela, y_janela, werd):
+        altura_mensagem = 3
+        clear_region_a(x=x_janela, start_y=y_janela, end_y=y_janela + altura_mensagem, width=werd)
         if item.nome == "Poção de Cura":
             if self.hp >= self.hp_max:
-                text_content = "Seu HP já está no máximo!"
+                mensagem = "Seu HP já está no máximo!"
                 sucesso = False
             else:
-                text_content = "Você bebeu uma poção de cura."
-                self.hp += item.bonus_hp
-                if self.hp > self.hp_max:
-                    self.hp = self.hp_max
+                mensagem = "Você bebeu uma poção de cura."
+                self.hp = min(self.hp + item.bonus_hp, self.hp_max)
                 self.inventario.remove(item)
                 sucesso = True
         elif item.nome == "Elixir":
             if self.mana >= self.mana_max:
-                text_content = "Sua Mana já está no máximo!"
+                mensagem = "Sua Mana já está no máximo!"
                 sucesso = False
             else:
-                text_content = "Você bebeu um elixir."
-                self.mana += item.bonus_mana
-                if self.mana > self.mana_max:
-                    self.mana = self.mana_max
+                mensagem = "Você bebeu um elixir."
+                self.mana = min(self.mana + item.bonus_mana, self.mana_max)
                 self.inventario.remove(item)
                 sucesso = True
         elif item.nome == "Suco":
             if self.stm >= self.stm_max:
-                text_content = "Sua Stamina já está no máximo!"
+                mensagem = "Sua Stamina já está no máximo!"
                 sucesso = False
             else:
-                text_content = "Você bebeu um suco."
-                self.stm += item.bonus_stm
-                if self.stm > self.stm_max:
-                    self.stm = self.stm_max
+                mensagem = "Você bebeu um suco."
+                self.stm = min(self.stm + item.bonus_stm, self.stm_max)
                 self.inventario.remove(item)
                 sucesso = True
-        herd = 3
-        draw_window(term, x_janela+1, y_janela, width=len(text_content) + 5, height=herd, text_content=text_content)
+
+        draw_window(term, x_janela, y_janela, width=werd, height=altura_mensagem, text_content=mensagem)
         time.sleep(2)
+        clear_region_a(x_janela, y_janela, y_janela + altura_mensagem, werd)
         return sucesso
 
-    def gerenciar_equipavel(self, item, x_janela, y_janela):
+    def gerenciar_equipavel(self, item, x_janela, y_janela, werd):
+        altura_opcoes = 6
+        altura_feedback = 4
+        clear_region_a(x_janela, y_janela, y_janela + altura_opcoes + altura_feedback, werd)
         text_content = "O que deseja fazer com o item?\n[1]Equipar\n[2]Desequipar"
-        herd = 6
-        draw_window(term, x_janela, y_janela, width=35, height=herd, title=item.nome, text_content=text_content)
-        with term.location(x_janela + 2, y_janela + herd - 2):
+        draw_window(term, x_janela, y_janela, width=werd, height=altura_opcoes, title=item.nome, text_content=text_content)
+        with term.location(x_janela + 2, y_janela + altura_opcoes - 2):
             esc = input(">")
-        feedback_message = ""
         if esc == "1":
             if not self.equipa.get(item.slot_equip):
                 self.equipa[item.slot_equip] = item
                 self.atk += item.bonus_atk
                 self.defesa += item.bonus_def
                 self.dano_magico += item.bonus_atk_mana
-                feedback_message = f"Você equipou {item.nome}."
+                feedback = f"Você equipou {item.nome}."
             else:
-                feedback_message = "Já tem algo equipado nesse slot!"
+                feedback = "Já tem algo equipado nesse slot!"
         elif esc == "2":
             if self.equipa.get(item.slot_equip) and self.equipa[item.slot_equip].nome == item.nome:
                 self.equipa[item.slot_equip] = None
                 self.atk -= item.bonus_atk
                 self.defesa -= item.bonus_def
                 self.dano_magico -= item.bonus_atk_mana
-                feedback_message = f"Desequipando {item.nome}."
+                feedback = f"Você desequipou {item.nome}."
             else:
-                feedback_message = "Este item não está equipado."
+                feedback = "Este item não está equipado."
         else:
-            feedback_message = "Opção inválida."
-        
-        feedback_herd = 5
-        draw_window(term, x_janela, y_janela + herd, width=len(feedback_message) + 5, height=feedback_herd, text_content=feedback_message)
+            feedback = "Opção inválida."
+
+        draw_window(term, x_janela, y_janela + altura_opcoes, width=werd, height=altura_feedback, text_content=feedback)
         time.sleep(2)
-        draw_window(term, x_janela, y_janela + herd, width=len(feedback_message) + 5, height=feedback_herd, text_content=" " * len(feedback_message))
+        clear_region_a(x_janela, y_janela, y_janela + altura_opcoes + altura_feedback, werd)
 
-    def gerenciar_loja(self, x_pos, y_pos, herd, x_loq, y_loq):
-        draw_window(term, x_loq, y_loq, width=25, height=herd, title="Loja")
-        with term.location(x=x_pos, y=y_pos):
-            print("Gold: ["+term.bold_yellow(f"{self.gold}")+"]")
-        with term.location(x=x_pos, y=y_pos+1):
-            print("[1] Comprar itens")
-        with term.location(x=x_pos, y=y_pos+2):
-            print("[2] Vender itens")
-        with term.location(x=x_pos, y=y_pos+3):
-            print("[3] Sair da loja")
-        with term.location(x=x_pos, y=y_pos+4):
-            escolha = input(">")
-        if escolha == "1":
-            self.comprar_itens(x_m=x_pos+26, y_m=y_pos, herd=7, x_l =x_loq+25, y_l=y_loq)
-        elif escolha == "2":
-            self.vender_itens(x_l=x_loq+0, y_l=y_loq +7)
-        elif escolha == "3":
-            with term.location(x=x_pos, y=y_pos):
-                print("Saindo da loja")
-            time.sleep(1)
-            return
-        else:
-            return
-
-    def comprar_itens(self, x_m, y_m, herd, x_l, y_l):
-        draw_window(term, x_l, y_l, width=25, height= herd, title="Comprar")
-        with term.location(x=x_m, y=y_m):
-            print("Gold: ["+term.bold_yellow(f"{self.gold}")+"]")
-        with term.location(x=x_m, y=y_m+1):
-            print("[1] Itens Equipáveis")
-        with term.location(x=x_m, y=y_m+2):
-            print("[2] Itens Consumíveis")
-        with term.location(x=x_m, y=y_m+3):
-            print("[3] Voltar")
-        with term.location(x=x_m, y=y_m+4):
-            escolha_tipo = input(">")
-            if escolha_tipo == "1":
-                self.exibir_itens_por_tipo("Equipavel", x_l-25, y_l=7-y_l)
-            elif escolha_tipo == "2":
-                self.exibir_itens_por_tipo("Consumivel", x_l-25, y_l=7-y_l)
-            elif escolha_tipo == "3":
+    def gerenciar_loja(self, x, y, largura):
+        while True:
+            clear()
+            text_content = f"Gold: [{term.bold_yellow(str(self.gold))}]\n"
+            text_content += "[1] Comprar Itens\n"
+            text_content += "[2] Vender Itens\n"
+            text_content += "[3] Sair da Loja"
+            
+            draw_window(term, x, y, width=largura, height=7, title="Loja", text_content=text_content)
+            
+            with term.location(x + 2, y + 5):
+                escolha = input("> ")
+            
+            if escolha == "1":
+                self.comprar_itens(x+largura, y, largura)
+            elif escolha == "2":
+                self.vender_itens(x+largura, y, largura)
+            elif escolha == "3":
                 return
             else:
-                with term.location(x=x_m, y=y_m):
-                    print("Opção inválida.")
-                time.sleep(2)
+                self._mensagem_temp("Opção inválida.", x, y + 8, largura)
 
-    def exibir_itens_por_tipo(self, tipo, x_l, y_l):
-        itens_disponiveis = [item for item in TODOS_OS_ITENS.values() if item.tipo == tipo and item.comprável]
-        text_content ="Gold: ["+term.bold_yellow(f"{self.gold}")+"]\n"
-        if not itens_disponiveis:
-            text_content += f"Nenhum item do tipo '{tipo}' disponível."
-        else:
-            for i, item_obj in enumerate(itens_disponiveis, 1):
-                text_content += f"[{i}] {item_obj.nome}-[{item_obj.preco}]\n"
-        text_content += "[0] Voltar"
-        num_linhas_texto = text_content.count('\n') + 1
-        herd = num_linhas_texto + 3
-        draw_window(term, x_l, y_l, width=35, height=herd, title=f"Comprar {tipo.capitalize()}", text_content=text_content)
-        with term.location(x_l +1, y_l + herd - 2):
-            try:
-                escolha_item = int(input(">"))
-                if escolha_item == 0:
-                    return
-                item_selecionado = itens_disponiveis[escolha_item - 1]
-                if self.gold >= item_selecionado.preco:
-                    self.gold -= item_selecionado.preco
-                    self.inventario.append(item_selecionado)
-                    with term.location(x_l + 2, y_l + herd):
-                        print(f"Você comprou {item_selecionado.nome}.")
-                else:
-                    with term.location(x_l + 2, y_l + herd):
-                        print("Dinheiro insuficiente.")
-            except (ValueError, IndexError):
-                with term.location(x_l + 2, y_l + herd):
-                    print("Opção inválida.")
-            
-            time.sleep(2)
-    
-    def vender_itens(self, x_l, y_l):
+    def comprar_itens(self, x, y, largura):
         while True:
-            itens_vendaveis = [item for item in self.inventario if item.vendivel]
-            text_content ="Gold: ["+term.bold_yellow(f"{self.gold}")+"]\n"
-            if not itens_vendaveis:
-                text_content += "Você não tem nenhum item vendável."
-                herd = 5
+            text_content = f"Gold: [{term.bold_yellow(str(self.gold))}]\n"
+            text_content += "[1] Itens Equipáveis\n"
+            text_content += "[2] Itens Consumíveis\n"
+            text_content += "[3] Voltar"
+            
+            draw_window(term, x, y, width=largura, height=7, title="Comprar", text_content=text_content)
+
+            with term.location(x + 2, y + 5):
+                escolha = input("> ")
+            
+            if escolha == "1":
+                self.exibir_itens_por_tipo("Equipavel", x-largura, y + 7, largura)
+            elif escolha == "2":
+                self.exibir_itens_por_tipo("Consumivel", x-largura, y + 7, largura)
+            elif escolha == "3":
+                return
             else:
-                contagem_itens = defaultdict(int)
-                for item_obj in itens_vendaveis:
-                    contagem_itens[item_obj.nome] += 1
-                itens_unicos = list(contagem_itens.keys())
-                for i, item_nome in enumerate(itens_unicos, 1):
-                    item_obj = TODOS_OS_ITENS[item_nome]
-                    quantidade = contagem_itens[item_nome]
-                    preco_venda = item_obj.preco // 2
-                    text_content += f"[{i}] {item_nome} (x{quantidade})-[{preco_venda}]\n"
+                pass
+
+    def exibir_itens_por_tipo(self, tipo, x, y, largura):
+        while True:
+            itens = [i for i in TODOS_OS_ITENS.values() if i.tipo == tipo and i.comprável]
+            text_content = f"Gold: [{term.bold_yellow(str(self.gold))}]\n"
+
+            if not itens:
+                text_content += f"Nenhum item do tipo '{tipo}' disponível.\n[0] Voltar"
+            else:
+                for idx, item in enumerate(itens, 1):
+                    text_content += f"[{idx}] {item.nome} - [{item.preco}]\n"
                 text_content += "[0] Voltar"
-                num_linhas_texto = text_content.count('\n') + 1
-                herd = num_linhas_texto + 3
-            draw_window(term, x_l, y_l, width=40, height=herd, title="Vender Itens", text_content=text_content)
-            with term.location(x_l + 2, y_l + herd - 2):
+
+            altura = text_content.count("\n") + 4
+            draw_window(term, x, y, width=largura, height=altura, title=f"Comprar {tipo}", text_content=text_content)
+
+            with term.location(x + 2, y + altura - 2):
                 try:
                     escolha = int(input(">"))
                     if escolha == 0:
                         return
-                    item_nome_selecionado = itens_unicos[escolha - 1]
-                    item_vendido = TODOS_OS_ITENS[item_nome_selecionado]
-                    preco_venda = item_vendido.preco // 2
-                    self.gold += preco_venda
-                    self.inventario.remove(item_vendido)                    
-                    with term.location(x_l + 2, y_l + herd):
-                        print(f"Você vendeu {item_vendido.nome} por {preco_venda} moedas.")
+                    item_escolhido = itens[escolha - 1]
+                    if self.gold >= item_escolhido.preco:
+                        self.gold -= item_escolhido.preco
+                        self.inventario.append(item_escolhido)
+                        with term.location(x=x+largura, y=y + 1):
+                            print(f"Você comprou {item_escolhido.nome}.",)
+                    else:
+                        with term.location(x+largura, y+1):
+                            print("Dinheiro insuficiente.")
                 except (ValueError, IndexError):
-                    with term.location(x_l + 2, y_l + herd):
-                        print("Opção inválida.")
-                time.sleep(2)
-                with term.location(x_l + 2, y_l + herd):
-                    print(" " * 30)
+                    pass
+    
+    def vender_itens(self, x, y, largura):
+        while True:
+            itens_vendaveis = [item for item in self.inventario if item.vendivel]
+            contagem = defaultdict(int)
+            for item in itens_vendaveis:
+                contagem[item.nome] += 1
+
+            nomes_unicos = list(contagem.keys())
+
+            text_content = f"Gold: [{term.bold_yellow(str(self.gold))}]\n"
+            if not nomes_unicos:
+                text_content += "Você não tem itens vendáveis.\n[0] Voltar"
+                altura = 6
+            else:
+                for i, nome in enumerate(nomes_unicos, 1):
+                    item = TODOS_OS_ITENS[nome]
+                    preco = item.preco // 2
+                    text_content += f"[{i}] {nome} (x{contagem[nome]}) - [{preco}]\n"
+                text_content += "[0] Voltar"
+                altura = text_content.count("\n") + 4
+
+            clear_region_a(x, y, y + altura + 4, largura)
+            draw_window(term, x, y, width=largura, height=altura, title="Vender Itens", text_content=text_content)
+
+            with term.location(x + 2, y + altura - 2):
+                try:
+                    escolha = int(input("> "))
+                    if escolha == 0:
+                        return
+                    item_nome = nomes_unicos[escolha - 1]
+                    item = TODOS_OS_ITENS[item_nome]
+                    preco = item.preco // 2
+                    self.gold += preco
+                    self.inventario.remove(item)
+                    self._mensagem_temp(f"Você vendeu {item.nome} por {preco} moedas.", x, y + altura, largura)
+                except (ValueError, IndexError):
+                    self._mensagem_temp("Opção inválida.", x, y + altura, largura)
 
     def hospital(self, x_, y_):
         with term.location(x=x_, y=y_):
