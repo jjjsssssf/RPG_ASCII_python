@@ -1,5 +1,5 @@
-from jogo import mini_mapa, jogo
-from classe_arts import draw_window, term, clear
+from jogo import mini_mapa
+from classe_arts import draw_window, term, clear, mini_mapa_
 import random, time, string
 from classe_do_jogador import jogador
 from classe_do_inimigo import inimigo
@@ -7,6 +7,7 @@ from classe_arts import art_ascii, Cores
 from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musica
 from classe_do_inventario import TODOS_OS_ITENS
 ascii = art_ascii()
+mapas = mini_mapa_()
 C = Cores()
 jj = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="0")
 ee = inimigo(nome="", hp_max=0, atk=0, niv=0, xp=0, defesa=0, gold=0, art_ascii="",atk1="",atk2="")
@@ -42,7 +43,17 @@ def menu_inicial(x_l, y_l):
                 art_player=skin,
                 skin=cor_final
             )
-            jogo(player_j=jj, ascii_j=ascii, x=10, y=0)
+            mini_mapa(
+                x_l=0,
+                y_l=0,
+                player=jj,
+                ascii=ascii,
+                mapas_=mapas.mapa_castelo.split('\n'),
+                camera_w=35,
+                camera_h=15,
+                x_p=5,
+                y_p=3,
+                menager="",)
 
         elif escolha == "2":
             draw_window(term, x=x_l, y=y_l, width=90, height=24, text_content=menu_art)
