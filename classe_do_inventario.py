@@ -34,7 +34,7 @@ TODOS_OS_ITENS = {
     }
 
 class magias:
-    def __init__(self, nome, tipo, bonus_hp=0, bonus_atk=0, bonus_def=0, bonus_stm=0, batalhas=False, mana_gasta=0):
+    def __init__(self, nome, tipo, bonus_hp=0, bonus_atk=0, bonus_def=0, bonus_stm=0, batalhas=False, mana_gasta=0, xp=0):
         self.nome = nome
         self.tipo = tipo
         self.bonus_hp = bonus_hp
@@ -43,16 +43,17 @@ class magias:
         self.bonus_stm = bonus_stm
         self.batalhas = batalhas
         self.mana_gasta = mana_gasta
+        self.xp = xp
 
     def __repr__(self):
         return f"magias(nome='{self.nome}', tipo='{self.tipo}')"
 
 TODAS_AS_MAGIAS = {
-    "Cura Leve": magias(nome="Cura Leve", tipo="Cura", bonus_hp=20, mana_gasta=10, ),
-    "Bola de Fogo": magias(nome="Bola de Fogo", tipo="Ataque", bonus_atk=0, batalhas=True, mana_gasta=15),
-    "Escudo Mágico": magias(nome="Escudo Mágico", tipo="Defesa", bonus_def=10, mana_gasta=10),
-    "Espada Sacrada": magias(nome="Espada Sacrada", tipo="Ajuda", bonus_atk=10, mana_gasta=10),
-    "Esqueleto": magias(nome="Esqueleto", tipo="Necro", bonus_atk=10, mana_gasta=15),
-    "Tempestade de Raios": magias(nome="Tempestade de Raios", tipo="Ataque", bonus_atk=30, batalhas=True, mana_gasta=30),
-    "Benção da Natureza": magias(nome="Benção da Natureza", tipo="Cura", bonus_hp=50, bonus_stm=10, mana_gasta=25),
+    "Cura Leve": magias(nome="Cura Leve", tipo="Cura", bonus_hp=20, mana_gasta=10, xp=25),
+    "Bola de Fogo": magias(nome="Bola de Fogo", tipo="Ataque", bonus_atk=0, batalhas=True, mana_gasta=15, xp=100),
+    "Escudo Mágico": magias(nome="Escudo Mágico", tipo="Defesa", bonus_def=10, mana_gasta=10, xp=100),
+    "Espada Sacrada": magias(nome="Espada Sacrada", tipo="Ajuda", bonus_atk=10, mana_gasta=10, xp=100),
+    "Esqueleto": magias(nome="Esqueleto", tipo="Necro", bonus_atk=10, mana_gasta=15, xp=100),
+    "Tempestade de Raios": magias(nome="Tempestade de Raios", tipo="Ataque", bonus_atk=30, batalhas=True, mana_gasta=30, xp=200),
+    "Benção da Natureza": magias(nome="Benção da Natureza", tipo="Cura", bonus_hp=50, bonus_stm=10, mana_gasta=25, xp=100),
 }

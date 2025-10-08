@@ -118,7 +118,6 @@ def batalha(player_b,inimigo_b):
                     parar_musica()
                     return False
 
-
 def batalha_cut(player_b, inimigo_b):
     parar_musica()
     escolher_e_tocar_musica("Menu_som_baia.mp3")

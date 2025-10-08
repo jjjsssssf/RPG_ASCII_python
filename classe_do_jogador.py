@@ -1,7 +1,9 @@
 import random, os, time, json
-from classe_arts import draw_window, term, linha_inven, linhas, linhas_batalha, clear, art_ascii, clear_region_a
+from classe_arts import draw_window, linha_inven, linhas, linhas_batalha, clear, art_ascii, clear_region_a
 from classe_do_inventario import Item, TODOS_OS_ITENS, magias, TODAS_AS_MAGIAS
 from collections import defaultdict
+from blessed import Terminal
+term = Terminal()
 art= art_ascii()
 class jogador:
     def __init__(self, nome, hp_max, atk, niv, xp_max, defesa, gold, stm_max, intt, mn_max, d_m,art_player, skin, mana_lit=None):
@@ -21,7 +23,7 @@ class jogador:
         self.ponto = 0
         self.xp_max = xp_max
         self.dano_magico = d_m
-        self.xp = 100
+        self.xp = 0
         self.defesa = defesa
         self.gold = gold
         self.rodar_jogo = False
@@ -191,6 +193,8 @@ class jogador:
             print(f"MGA: [{term.bold_magenta(str(self.dano_magico))}] - INT: [{term.bold_gray(str(self.intt))}]")
         with term.location(x=x_l, y=y_l+5):
             print(f"Gold: [{term.bold_yellow(str(self.gold))}] - Nivel: [{term.bold_green(str(self.niv))}]")
+        with term.location(x=x_l, y=y_l+6):
+            print(f"X: [{term.bold_blue(str(self.x_mapa))}] - Y: [{term.bold_red(str(self.y_mapa))}]")
 
     def status_art(self ,x_janela, y_janela):
         art_player = self.art_player
@@ -293,6 +297,68 @@ para sair"""
                 time.sleep(2)
                 self.ponto -= 1
                 self.intt += 3
+
+    def aprender_magias(self, term, x_menu, y_menu, wend, herd):
+        term = Terminal()
+        tipos_magias = sorted(set(magia.tipo for magia in TODAS_AS_MAGIAS.values()))
+        
+        while True:
+            clear_region_a(x=x_menu, start_y=y_menu, end_y=y_menu + 10, width=wend)
+            menu_text = "Escolha o tipo de magia para aprender:\n"
+            for i, tipo in enumerate(tipos_magias, start=1):
+                menu_text += f"[{i}] {tipo}\n"
+            menu_text += "[0] Voltar"
+            draw_window(term, x_menu, y_menu, wend, herd+2, text_content=menu_text)
+
+            with term.location(x=x_menu+1, y=y_menu+herd):
+                escolha = input(">").strip()
+
+            if escolha == '0':
+                break
+
+            if escolha.isdigit() and 1 <= int(escolha) <= len(tipos_magias):
+                tipo_escolhido = tipos_magias[int(escolha) - 1]
+                magias_disponiveis = [
+                    m for m in TODAS_AS_MAGIAS.values()
+                    if m.tipo == tipo_escolhido and m.nome not in self.mana_lit
+                ]
+
+                if not magias_disponiveis:
+                    draw_window(term, x_menu, y_menu, wend, herd+2, text_content="Nenhuma magia disponível.")
+                    time.sleep(2)
+                    continue
+
+                while True:
+                    clear_region_a(x_menu, y_menu, y_menu + 10, wend)
+                    conteudo = f"Magias de tipo: {tipo_escolhido}\n"
+                    for i, magia in enumerate(magias_disponiveis, 1):
+                        conteudo += f"[{i}] {magia.nome} - Requer {magia.xp} XP\n"
+                    conteudo += "[0] Voltar"
+                    draw_window(term, x_menu, y_menu, wend, herd+2, text_content=conteudo)
+
+                    with term.location(x=x_menu+1, y=y_menu+herd):
+                        escolha_magia = input(">").strip()
+
+                    if escolha_magia == '0':
+                        break
+
+                    if escolha_magia.isdigit() and 1 <= int(escolha_magia) <= len(magias_disponiveis):
+                        magia = magias_disponiveis[int(escolha_magia) - 1]
+
+                        if magia.nome in self.mana_lit:
+                            draw_window(term, x_menu, y_menu, wend, herd+2, text_content="Você já aprendeu essa magia.")
+                            input("Pressione Enter para continuar...")
+                            continue
+                        if self.ponto >= magia.xp:
+                            self.ponto -= magia.xp
+                            self.mana_lit.append(magia.nome)
+                            draw_window(term, x_menu, y_menu, wend, herd+2, text_content=f"Você aprendeu: {magia.nome}")
+                        else:
+                            draw_window(term, x_menu, y_menu, wend, herd+2, text_content="XP insuficiente.")
+                        
+                        input("")
+                        break
+
 
     def menu_magias(self, x_menu, y_menu, batalha, alvo):
         text_content = ""
@@ -695,3 +761,4 @@ para sair"""
                 escolha_classe = input(">")
             if escolha_classe == "1":
                 self.nome = escolha_classe
+

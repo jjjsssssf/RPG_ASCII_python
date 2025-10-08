@@ -110,7 +110,9 @@ def mini_mapa(
             'B': term.yellow,
             'P': term.red,
             'H': term.bold_brown,
-            'W': term.bold_gray
+            'W': term.bold_gray,
+            'V': term.bold_green,
+            'M': term.bold_magenta_on_white
         }
 
         draw_window(term, x=x_l + CAMERA_WIDTH + 5, y=y_l, width=CAMERA_WIDTH + 5, height=CAMERA_HEIGHT + 2, text_content=menager)
@@ -153,14 +155,6 @@ def mini_mapa(
                     OBSTACULOS.remove('H')
 
             if caractere_atual == "W":
-                Cores_novas = {
-                    '♠': term.bold_green_on_black,
-                    'B': term.bold_white_on_brown,
-                    'P': term.blue,
-                    "#": term.red,
-                    "@": term.bold_white,
-                    " ": term.gray
-                }
                 mini_mapa(
                     x_l=0,
                     y_l=0,
@@ -179,13 +173,15 @@ def mini_mapa(
                         "cores": CORES,
                         "obstaculos": OBSTACULOS
                     },
-                    cores_custom=Cores_novas,
                     mapa_nome="castelo_2"  
                 )
                 return
 
         elif mapas_ == mapas.mapa_castelo_2.split("\n"):
-            if caractere_atual == "W":
+            if TODOS_OS_ITENS["Chave"] in player.inventario:
+                if 'H' in OBSTACULOS:
+                    OBSTACULOS.remove('H')
+            if player.x_mapa == 5 and player.y_mapa == 1:
                 mini_mapa(
                     x_l=0,
                     y_l=0,
@@ -207,6 +203,18 @@ def mini_mapa(
                     mapa_nome="castelo_1"
                 )
                 return
+            if caractere_atual == "B":
+                bau()
+            elif caractere_atual == "@":
+                inimigo = seleção_inimigo(num=1)
+                batalha(player_b=player, inimigo_b=inimigo)
+                if inimigo.hp <= 0:
+                    ESTADO_MAPAS[mapa_id]["inimigos_derrotados"].add((player.x_mapa, player.y_mapa))
+                    linha_antiga = mapa_art[player.y_mapa]
+                    mapa_art[player.y_mapa] = linha_antiga[:player.x_mapa] + ' ' + linha_antiga[player.x_mapa + 1:]
+            elif caractere_atual == "M":
+                player.aprender_magias(term, x_menu=x_l + CAMERA_WIDTH + 5, y_menu=CAMERA_HEIGHT-15, wend=camera_w+5, herd = CAMERA_HEIGHT)
+
 
         if feedback_message:
             with term.location(0, CAMERA_HEIGHT + y_l + 4):
@@ -259,3 +267,16 @@ def mini_mapa(
                 player.y_mapa = novo_y
                 if caractere in INTERACOES:
                     INTERACOES[caractere]()
+
+
+mini_mapa(
+                x_l=0,
+                y_l=0,
+                player=player,
+                ascii=ascii,
+                mapas_=mapas.mapa_castelo_2.split('\n'),
+                camera_w=35,
+                camera_h=15,
+                x_p=5,
+                y_p=3,
+                menager="",)
