@@ -20,7 +20,7 @@ class jogador:
         self.buff_def = 0
         self.intt = intt
         self.niv = niv
-        self.ponto = 0
+        self.ponto = 1000
         self.xp_max = xp_max
         self.dano_magico = d_m
         self.xp = 0
@@ -40,8 +40,7 @@ class jogador:
             "Negromante":None
         }
         self.inventario = []
-
-        self.mana_lit = mana_lit if mana_lit is not None else []
+        self.mana_lit = []
         self.equipa = {
             "m_pri": None,
             "m_seg": None,
@@ -332,7 +331,7 @@ para sair"""
                     clear_region_a(x_menu, y_menu, y_menu + 10, wend)
                     conteudo = f"Magias de tipo: {tipo_escolhido}\n"
                     for i, magia in enumerate(magias_disponiveis, 1):
-                        conteudo += f"[{i}] {magia.nome} - Requer {magia.xp} XP\n"
+                        conteudo += f"[{i}] {magia.nome} - Requer {magia.xp} Pontos\n"
                     conteudo += "[0] Voltar"
                     draw_window(term, x_menu, y_menu, wend, herd+2, text_content=conteudo)
 
@@ -347,7 +346,8 @@ para sair"""
 
                         if magia.nome in self.mana_lit:
                             draw_window(term, x_menu, y_menu, wend, herd+2, text_content="Você já aprendeu essa magia.")
-                            input("Pressione Enter para continuar...")
+                            with term.location(x=x_menu+1, y=y_menu+herd):
+                                input("Pressione Enter para continuar...")
                             continue
                         if self.ponto >= magia.xp:
                             self.ponto -= magia.xp
@@ -355,19 +355,18 @@ para sair"""
                             draw_window(term, x_menu, y_menu, wend, herd+2, text_content=f"Você aprendeu: {magia.nome}")
                         else:
                             draw_window(term, x_menu, y_menu, wend, herd+2, text_content="XP insuficiente.")
-                        
-                        input("")
+                            with term.location(x=x_menu+1, y=y_menu+herd):
+                                input("Pressione Enter para continuar...")
                         break
 
-
     def menu_magias(self, x_menu, y_menu, batalha, alvo):
+        term = Terminal()
         text_content = ""
-        nome_das_magias = [sublist[0] for sublist in self.mana_lit]
 
         if not self.mana_lit:
             text_content = "Você não conhece nenhuma magia."
         else:
-            for nome_magia in nome_das_magias:
+            for nome_magia in self.mana_lit:
                 magia_obj = TODAS_AS_MAGIAS.get(nome_magia)
                 if magia_obj:
                     text_content += f"{magia_obj.nome} (Custo: {magia_obj.mana_gasta} Mana)\n"
@@ -376,16 +375,17 @@ para sair"""
         num_linhas_texto = text_content.count('\n') + 1
         herd = num_linhas_texto + 3
         draw_window(term, x_menu, y_menu, width=45, height=herd, title="Livro de Magias", text_content=text_content)
+        
         x_input = x_menu + 2
         y_input = y_menu + herd - 2
-        
+
         with term.location(x_input, y_input):
             escolha = input(">")
-        
+
         if escolha.lower() == "sair":
             return False
             
-        if escolha in nome_das_magias:
+        if escolha in self.mana_lit:
             magia_escolhida = TODAS_AS_MAGIAS[escolha]
             if magia_escolhida.batalhas and not batalha:
                 feedback_message = "Você só pode usar esta magia em batalha!"
@@ -402,6 +402,7 @@ para sair"""
 
     def usar_magia(self, magia, x_janela, y_janela, alvo):
         text_content = ""
+        herd = 3
         sucesso = False       
         if self.mana < magia.mana_gasta:
             text_content = "Mana insuficiente!"
@@ -421,20 +422,16 @@ para sair"""
                 alvo.hp -= dano
                 text_content = f"Você lançou {magia.nome} e causou {dano} de dano."
                 sucesso = True
-            elif magia.tipo == "Defesa":
+            elif magia.tipo == "Ajudante":
                 self.buff_def += magia.bonus_def
-                text_content = f"Você usou {magia.nome} e sua defesa aumentou em {magia.bonus_def}."
-                sucesso = True
-            elif magia.tipo == "Ajuda":
-                self.atk += magia.bonus_atk
-                text_content = f"Você usou {magia.nome} e seu ataque aumentou em {magia.bonus_atk}."
-                sucesso = True
-            elif magia.tipo == "Necro":
                 self.buff_atk += magia.bonus_atk
-                text_content = f"Você envocou um {magia.nome} ajudando na batalha {self.atk}."
+                text_content =f"""Você chamou {magia.nome}
+ele ira te ajudar na batalhas
+ATK: [{magia.bonus_atk}]
+DEF: [{magia.bonus_def}]"""
+                herd = 6
                 sucesso = True
-        herd = 3
-        draw_window(term, x_janela, y_janela, width=len(text_content) + 5, height=herd, text_content=text_content)
+        draw_window(term, x_janela, y_janela, width=35, height=herd, text_content=text_content)
         time.sleep(2)
         return sucesso
 

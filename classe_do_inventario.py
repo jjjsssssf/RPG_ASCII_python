@@ -49,11 +49,10 @@ class magias:
         return f"magias(nome='{self.nome}', tipo='{self.tipo}')"
 
 TODAS_AS_MAGIAS = {
-    "Cura Leve": magias(nome="Cura Leve", tipo="Cura", bonus_hp=20, mana_gasta=10, xp=25),
-    "Bola de Fogo": magias(nome="Bola de Fogo", tipo="Ataque", bonus_atk=0, batalhas=True, mana_gasta=15, xp=100),
-    "Escudo Mágico": magias(nome="Escudo Mágico", tipo="Defesa", bonus_def=10, mana_gasta=10, xp=100),
-    "Espada Sacrada": magias(nome="Espada Sacrada", tipo="Ajuda", bonus_atk=10, mana_gasta=10, xp=100),
-    "Esqueleto": magias(nome="Esqueleto", tipo="Necro", bonus_atk=10, mana_gasta=15, xp=100),
-    "Tempestade de Raios": magias(nome="Tempestade de Raios", tipo="Ataque", bonus_atk=30, batalhas=True, mana_gasta=30, xp=200),
-    "Benção da Natureza": magias(nome="Benção da Natureza", tipo="Cura", bonus_hp=50, bonus_stm=10, mana_gasta=25, xp=100),
+    "Cura Leve": magias(nome="Cura Leve", tipo="Cura", bonus_hp=20, mana_gasta=10, xp=5),
+    "Benção da Natureza": magias(nome="Benção da Natureza", tipo="Cura", bonus_hp=50, bonus_stm=10, mana_gasta=25, xp=10),
+    "Tempestade de Raios": magias(nome="Tempestade de Raios", tipo="Ataque", bonus_atk=30, batalhas=True, mana_gasta=30, xp=10),
+    "Bola de Fogo": magias(nome="Bola de Fogo", tipo="Ataque", bonus_atk=15, batalhas=True, mana_gasta=15, xp=5),
+    "Regruta": magias(nome="Regruta", tipo="Ajudante", bonus_atk=5, bonus_def=5,mana_gasta=15, xp=5),
+    "Arqueiro": magias(nome="Arqueiro", tipo="Ajudante", bonus_atk=10, mana_gasta=15, xp=5),
 }

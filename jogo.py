@@ -15,14 +15,14 @@ ESTADO_MAPAS = {}
 def mini_mapa(
     x_l, y_l, player,ascii, mapas_, camera_w, camera_h, x_p, y_p, menager,
     cores_custom=None, obstaculos_custom=None, mapa_anterior=None, interacoes_custom=None, quantidade_map=None,
-    mapa_nome=None 
+    mapa_nome=None, carater_ale = str, quantidade_ale = int
 ):
     raw_map_lines = mapas_
     max_width = max(len(l) for l in raw_map_lines if l.strip())
     mapa_id = mapa_nome or id(mapas_)
     if mapa_id not in ESTADO_MAPAS:
         mapa_art = [l.ljust(max_width) for l in raw_map_lines if l.strip()]
-        quantidade_caracteres = quantidade_map or {'@': player.niv + 5}
+        quantidade_caracteres = quantidade_map or {carater_ale: quantidade_ale}
 
         posicoes_vazias = [
             (y, x)
@@ -106,13 +106,14 @@ def mini_mapa(
         CORES = cores_custom or {
             "#": term.bold_magenta,
             '~': term.blue,
-            '@': term.blue,
+            '@': term.red_on_white,
             'B': term.yellow,
             'P': term.red,
             'H': term.bold_brown,
             'W': term.bold_gray,
             'V': term.bold_green,
-            'M': term.bold_magenta_on_white
+            'M': term.bold_magenta_on_white,
+            '▒': term.bold_magenta_on_blue
         }
 
         draw_window(term, x=x_l + CAMERA_WIDTH + 5, y=y_l, width=CAMERA_WIDTH + 5, height=CAMERA_HEIGHT + 2, text_content=menager)
@@ -126,7 +127,7 @@ def mini_mapa(
 
         with term.location(x_l + 2 + player.x_mapa - camera_x, y_l + 1 + player.y_mapa - camera_y):
             print(term.bold_yellow(player.skin) + term.normal)
-
+            
         try:
             caractere_atual = mapa_art[player.y_mapa][player.x_mapa]
         except IndexError:
@@ -163,7 +164,7 @@ def mini_mapa(
                     mapas_=mapas.mapa_castelo_2.split('\n'),
                     camera_w=35,
                     camera_h=15,
-                    x_p=6,
+                    x_p=7,
                     y_p=1,
                     menager="",
                     mapa_anterior={
@@ -173,7 +174,9 @@ def mini_mapa(
                         "cores": CORES,
                         "obstaculos": OBSTACULOS
                     },
-                    mapa_nome="castelo_2"  
+                    mapa_nome="castelo_2",
+                    carater_ale="@",
+                    quantidade_ale=10
                 )
                 return
 
@@ -181,7 +184,7 @@ def mini_mapa(
             if TODOS_OS_ITENS["Chave"] in player.inventario:
                 if 'H' in OBSTACULOS:
                     OBSTACULOS.remove('H')
-            if player.x_mapa == 5 and player.y_mapa == 1:
+            if player.x_mapa == 6 and player.y_mapa == 1:
                 mini_mapa(
                     x_l=0,
                     y_l=0,
@@ -212,8 +215,109 @@ def mini_mapa(
                     ESTADO_MAPAS[mapa_id]["inimigos_derrotados"].add((player.x_mapa, player.y_mapa))
                     linha_antiga = mapa_art[player.y_mapa]
                     mapa_art[player.y_mapa] = linha_antiga[:player.x_mapa] + ' ' + linha_antiga[player.x_mapa + 1:]
-            elif caractere_atual == "M":
+            elif player.x_mapa == 9 and player.y_mapa == 24 or player.x_mapa == 10 and player.y_mapa == 24:
+                core_custom = {
+                    '#': term.blue,
+                    '=': term.bold_blue,
+                    '[': term.bold_magente,
+                    ']': term.bold_magente,
+                    'O': term.bold_white_on_brown,
+                    '.': term.black,
+                    'M': term.magenta
+                }
+                colisoes = {
+                    "#", '[', ']', '=', 'O', '.'
+                }
+                mini_mapa(
+                    x_l=0,
+                    y_l=0,
+                    player=player,
+                    ascii=ascii,
+                    mapas_=mapas.biblioteca.split('\n'),
+                    camera_w=35,
+                    camera_h=15,
+                    x_p=12,
+                    y_p=9,
+                    menager="",
+                    mapa_anterior={
+                        "mapa": mapas_,
+                        "pos": (player.x_mapa, player.y_mapa),
+                        "mensagem": menager,
+                        "cores": CORES,
+                        "obstaculos": OBSTACULOS
+                    },
+                    mapa_nome="biblica",
+                    carater_ale="",
+                    quantidade_ale=0,
+                    cores_custom=core_custom,
+                    obstaculos_custom=colisoes
+                )
+                return
+            elif player.x_mapa == 24 and player.y_mapa == 0 or player.x_mapa == 25 and player.y_mapa == 0:
+                mini_mapa(
+                    x_l=0,
+                    y_l=0,
+                    player=player,
+                    ascii=ascii,
+                    mapas_=mapas.taberna.split('\n'),
+                    camera_w=35,
+                    camera_h=15,
+                    x_p=22,
+                    y_p=8,
+                    menager="",
+                    mapa_anterior={
+                        "mapa": mapas_,
+                        "pos": (player.x_mapa, player.y_mapa),
+                        "mensagem": menager,
+                        "cores": CORES,
+                        "obstaculos": OBSTACULOS
+                    },
+                    mapa_nome="taberna",
+                    carater_ale="&",
+                    quantidade_ale=5,
+                )
+                return
+                
+        elif mapas_ == mapas.biblioteca.split("\n"):
+            if player.x_mapa == 12 and player.y_mapa == 8 or player.x_mapa == 13 and player.y_mapa == 8:
+                mini_mapa(
+                    x_l=0,
+                    y_l=0,
+                    player=player,
+                    ascii=ascii,
+                    mapas_=mapas.mapa_castelo_2.split('\n'),
+                    camera_w=35,
+                    camera_h=15,
+                    x_p=9,
+                    y_p=23,
+                    menager="",
+                    mapa_anterior={
+                        "mapa": mapas_,
+                        "pos": (player.x_mapa, player.y_mapa),
+                        "mensagem": menager,
+                        "cores": CORES,
+                        "obstaculos": OBSTACULOS
+                    },
+                    mapa_nome="castelo_2",
+                    carater_ale="@",
+                    quantidade_ale=10
+                )
+                return
+
+            if player.x_mapa == 12 and player.y_mapa == 13:
                 player.aprender_magias(term, x_menu=x_l + CAMERA_WIDTH + 5, y_menu=CAMERA_HEIGHT-15, wend=camera_w+5, herd = CAMERA_HEIGHT)
+
+        elif mapas_ == mapas.taberna.split("\n"):
+            if caractere_atual == "&":
+                def falas_aleatorias():
+                    fala = "Olá rapaz nesse castelo tem perigos"
+                    fala1 = 'Se aproxime do vendedor'
+                    fala_ale = random.choice([fala, fala1])
+                    with term.location(x=x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-2):
+                        print(fala_ale)
+                falas_aleatorias()
+            if player.x_mapa == 23 and player.y_mapa == 13:
+                player.gerenciar_loja(x=0, y=0, largura=35)
 
 
         if feedback_message:
@@ -277,6 +381,8 @@ mini_mapa(
                 mapas_=mapas.mapa_castelo_2.split('\n'),
                 camera_w=35,
                 camera_h=15,
-                x_p=5,
-                y_p=3,
-                menager="",)
+                x_p=7,
+                y_p=1,
+                menager="",
+                carater_ale="@",
+                quantidade_ale=10)
