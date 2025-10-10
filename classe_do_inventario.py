@@ -30,7 +30,8 @@ TODOS_OS_ITENS = {
     "Cajado": Item(nome="Cajado", tipo="Equipavel", preco=100, bonus_atk_mana=5, slot_equip="m_pri"),
     "Anel Lendário": Item(nome="Anel Lendário", tipo="Equipavel", preco=5000, bonus_def=25),
     "Crucifixo": Item(nome="Crucifixo", tipo="Equipavel", preco=0, vendivel=False, comprável=False,bonus_def=25, bonus_atk_mana=25, slot_equip="s_crad", ),
-    "Chave": Item(nome='Chave', tipo="Chave", preco=0, vendivel=False, comprável=False)
+    "Chave": Item(nome='Chave', tipo="Chave", preco=0, vendivel=False, comprável=False),
+    "Chave do Dragão": Item(nome='Chave do Dragão', tipo="Chave", preco=0, vendivel=False, comprável=False)
     }
 
 class magias:

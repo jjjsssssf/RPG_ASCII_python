@@ -1,5 +1,6 @@
 from classe_do_jogador import jogador
-import time, random, os
+from classe_do_inimigo import inimigo
+import time, random, os, json
 from batalha import batalha, batalha_cut, seleção_inimigo
 from classe_arts import draw_window,term, clear, art_ascii, Cores, mini_mapa_, dialogos, clear_region_a
 from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musica
@@ -8,19 +9,58 @@ mapas = mini_mapa_()
 dialogo = dialogos()
 ascii = art_ascii()
 C = Cores()
-player = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="@")
+player = jogador(nome="", hp_max=100, atk=150, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="@")
+def salvar_mapa_estado(filename, mapa_id, estado_mapa):
+    try:
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump({
+                "mapa_id": mapa_id,
+                "mapa_art": estado_mapa["mapa_art"],
+                "inimigos_derrotados": list(estado_mapa["inimigos_derrotados"]),
+                "baus_abertos": list(estado_mapa["baus_abertos"]),
+                "interacoes": estado_mapa.get("interacoes", {}),
+                "obstaculos": estado_mapa["obstaculos"],
+                "cores": estado_mapa.get("cores", {})
+            }, f, indent=4)
+        print(f"Estado do mapa salvo com sucesso.")
+    except IOError as e:
+        print(f"Erro ao salvar o estado do mapa: {e}")
 
-ESTADO_MAPAS = {}
+def carregar_mapa_estado(filename):
+    if not os.path.exists(filename):
+        return None
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Erro ao carregar estado do mapa: {e}")
+        return None
 
 def mini_mapa(
-    x_l, y_l, player,ascii, mapas_, camera_w, camera_h, x_p, y_p, menager,
+    x_l, y_l, player, ascii, mapas_, camera_w, camera_h, x_p, y_p, menager,
     cores_custom=None, obstaculos_custom=None, mapa_anterior=None, interacoes_custom=None, quantidade_map=None,
-    mapa_nome=None, carater_ale = str, quantidade_ale = int
+    mapa_nome=None, carater_ale=str, quantidade_ale=int
 ):
-    raw_map_lines = mapas_
-    max_width = max(len(l) for l in raw_map_lines if l.strip())
+    ESTADO_MAPAS = {}
+
     mapa_id = mapa_nome or id(mapas_)
-    if mapa_id not in ESTADO_MAPAS:
+
+    save_filename = f"save_mapa_{mapa_id}.json"
+
+    estado_carregado = carregar_mapa_estado(save_filename)
+
+    if estado_carregado:
+        ESTADO_MAPAS[mapa_id] = {
+            "mapa_art": estado_carregado["mapa_art"],
+            "inimigos_derrotados": set(estado_carregado["inimigos_derrotados"]),
+            "baus_abertos": set(estado_carregado["baus_abertos"]),
+            "interacoes": estado_carregado.get("interacoes", {}),
+            "obstaculos": estado_carregado["obstaculos"],
+            "cores": estado_carregado.get("cores", {})
+        }
+    else:
+        raw_map_lines = mapas_
+        max_width = max(len(l) for l in raw_map_lines if l.strip())
         mapa_art = [l.ljust(max_width) for l in raw_map_lines if l.strip()]
         quantidade_caracteres = quantidade_map or {carater_ale: quantidade_ale}
 
@@ -49,9 +89,6 @@ def mini_mapa(
             "obstaculos": obstaculos_custom or ['#', '.', "H"],
             "cores": cores_custom,
         }
-    else:
-        mapa_art = ESTADO_MAPAS[mapa_id]["mapa_art"]
-
     player.x_mapa = x_p
     player.y_mapa = y_p
     OBSTACULOS = obstaculos_custom or ESTADO_MAPAS[mapa_id]["obstaculos"]
@@ -92,7 +129,6 @@ def mini_mapa(
         def falas(menager):
             clear_region_a(x=x_l + CAMERA_WIDTH + 6, start_y=y_l, end_y=y_l, width=CAMERA_WIDTH + 5)
             draw_window(term, x=x_l + CAMERA_WIDTH + 5, y=y_l, width=CAMERA_WIDTH + 5, height=CAMERA_HEIGHT + 2, text_content=menager)
-            input("")
 
         clear()
         atualizar_camera()
@@ -101,7 +137,7 @@ def mini_mapa(
             for linha in mapa_art[camera_y:camera_y + CAMERA_HEIGHT]
         ]
         mini_mapa_render = "\n".join(janela_mapa)
-        draw_window(term, x=x_l, y=y_l, width=CAMERA_WIDTH + 4, height=CAMERA_HEIGHT + 2, text_content=mini_mapa_render)
+        draw_window(term, x=x_l, y=y_l, width=CAMERA_WIDTH + 4, height=CAMERA_HEIGHT + 2,title=f"{mapa_nome}", text_content=mini_mapa_render)
 
         CORES = cores_custom or {
             "#": term.bold_magenta,
@@ -137,9 +173,9 @@ def mini_mapa(
             if caractere_atual == "B":
                 bau()
             elif caractere_atual == "@":
-                inimigo = seleção_inimigo(num=1)
-                batalha(player_b=player, inimigo_b=inimigo)
-                if inimigo.hp <= 0:
+                inimigo_ = seleção_inimigo(num=1)
+                batalha(player_b=player, inimigo_b=inimigo_)
+                if inimigo_.hp <= 0:
                     ESTADO_MAPAS[mapa_id]["inimigos_derrotados"].add((player.x_mapa, player.y_mapa))
                     linha_antiga = mapa_art[player.y_mapa]
                     mapa_art[player.y_mapa] = linha_antiga[:player.x_mapa] + ' ' + linha_antiga[player.x_mapa + 1:]
@@ -209,9 +245,9 @@ def mini_mapa(
             if caractere_atual == "B":
                 bau()
             elif caractere_atual == "@":
-                inimigo = seleção_inimigo(num=1)
-                batalha(player_b=player, inimigo_b=inimigo)
-                if inimigo.hp <= 0:
+                inimigo_ = seleção_inimigo(num=1)
+                batalha(player_b=player, inimigo_b=inimigo_)
+                if inimigo_.hp <= 0:
                     ESTADO_MAPAS[mapa_id]["inimigos_derrotados"].add((player.x_mapa, player.y_mapa))
                     linha_antiga = mapa_art[player.y_mapa]
                     mapa_art[player.y_mapa] = linha_antiga[:player.x_mapa] + ' ' + linha_antiga[player.x_mapa + 1:]
@@ -253,6 +289,44 @@ def mini_mapa(
                     obstaculos_custom=colisoes
                 )
                 return
+           
+            elif player.x_mapa == 21 and player.y_mapa == 24 or player.x_mapa == 22 and player.y_mapa == 24:
+                core_custom = {
+                    '#': term.magenta,
+                    '.': term.green,
+                    '░': term.red,
+                    '~': term.red_on_orange,
+                    '^': term.orange_on_yellow,
+                }
+                colisoes = {
+                    "#", "~", "^", '/', '\\', 'o' 
+                }
+                mini_mapa(
+                    x_l=0,
+                    y_l=0,
+                    player=player,
+                    ascii=ascii,
+                    mapas_=mapas.boss_1.split('\n'),
+                    camera_w=35,
+                    camera_h=15,
+                    x_p=18,
+                    y_p=14,
+                    menager="",
+                    mapa_anterior={
+                        "mapa": mapas_,
+                        "pos": (player.x_mapa, player.y_mapa),
+                        "mensagem": menager,
+                        "cores": CORES,
+                        "obstaculos": OBSTACULOS
+                    },
+                    mapa_nome="Suny",
+                    carater_ale="",
+                    quantidade_ale=0,
+                    cores_custom=core_custom,
+                    obstaculos_custom=colisoes
+                )
+                return
+                
             elif player.x_mapa == 24 and player.y_mapa == 0 or player.x_mapa == 25 and player.y_mapa == 0:
                 mini_mapa(
                     x_l=0,
@@ -310,16 +384,83 @@ def mini_mapa(
         elif mapas_ == mapas.taberna.split("\n"):
             if caractere_atual == "&":
                 def falas_aleatorias():
-                    fala = "Olá rapaz nesse castelo tem perigos"
-                    fala1 = 'Se aproxime do vendedor'
+                    fala = """Por aqui todos tem medo do rei
+ninguem o vio mas tem medo"""
+                    fala1 = '''Se quiser comprar algo
+se aproxime do vendedor'''
                     fala_ale = random.choice([fala, fala1])
-                    with term.location(x=x_l+CAMERA_WIDTH+6, y=CAMERA_HEIGHT-2):
-                        print(fala_ale)
+                    falas(menager=fala_ale)
                 falas_aleatorias()
             if player.x_mapa == 23 and player.y_mapa == 13:
                 player.gerenciar_loja(x=0, y=0, largura=35)
+            elif player.x_mapa == 22 and player.y_mapa == 7 or player.x_mapa == 23 and player.y_mapa == 7:
+                mini_mapa(
+                    x_l=0,
+                    y_l=0,
+                    player=player,
+                    ascii=ascii,
+                    mapas_=mapas.mapa_castelo_2.split('\n'),
+                    camera_w=35,
+                    camera_h=15,
+                    x_p=24,
+                    y_p=1,
+                    menager="",
+                    mapa_anterior={
+                        "mapa": mapas_,
+                        "pos": (player.x_mapa, player.y_mapa),
+                        "mensagem": menager,
+                        "cores": CORES,
+                        "obstaculos": OBSTACULOS
+                    },
+                    mapa_nome="castelo_2",
+                    carater_ale="@",
+                    quantidade_ale=10
+                )
+                return
 
-
+        elif mapas_ == mapas.boss_1.split("\n"):
+            if player.boss['Suny'] == False:
+                if player.x_mapa == 18 and player.y_mapa == 6 or player.x_mapa == 19 and player.y_mapa == 6:
+                    fla = '''Suny: Como ousa a atrapalar meu sono agora
+vou te matar, seu verme aldito '''
+                    falas(menager=fla)
+                    time.sleep(2)
+                    suny = inimigo(nome='Suny', hp_max=250, atk=25, niv=5, xp=500, defesa=15, gold=600, art_ascii=ascii.suny, atk1='Mordida', atk2='Bola de Fogo')
+                    batalha_cut(player_b=player, inimigo_b=suny)
+                    if suny.hp <= 0:
+                        fla = '''Suny: Seu maldito como pode me derrotar 
+*suspiro* bem pegue essa chave e siga 
+sua missão
+Foi adicionado uma Chave do Dragão'''
+                        falas(menager=fla)
+                        player.inventario.append(TODOS_OS_ITENS['Chave do Dragão'])
+                        player.boss['Suny']=True
+            if player.x_mapa == 18 and player.y_mapa == 15 or player.x_mapa == 19 and player.y_mapa == 15:
+                mini_mapa(
+                    x_l=0,
+                    y_l=0,
+                    player=player,
+                    ascii=ascii,
+                    mapas_=mapas.mapa_castelo_2.split('\n'),
+                    camera_w=35,
+                    camera_h=15,
+                    x_p=21,
+                    y_p=23,
+                    menager="",
+                    mapa_anterior={
+                        "mapa": mapas_,
+                        "pos": (player.x_mapa, player.y_mapa),
+                        "mensagem": menager,
+                        "cores": CORES,
+                        "obstaculos": OBSTACULOS
+                    },
+                    mapa_nome="castelo_2",
+                    carater_ale="@",
+                    quantidade_ale=10
+                )
+                return
+                
+                
         if feedback_message:
             with term.location(0, CAMERA_HEIGHT + y_l + 4):
                 print(term.red(feedback_message))
@@ -339,50 +480,66 @@ def mini_mapa(
         except (ValueError, IndexError):
             quant = 1
 
-        novo_x = player.x_mapa
-        novo_y = player.y_mapa
+        direcoes = {
+            "w": (0, -1),
+            "s": (0, 1),
+            "a": (-1, 0),
+            "d": (1, 0),
+        }
 
-        if movi == "w":
-            novo_y -= quant
-        elif movi == "s":
-            novo_y += quant
-        elif movi == "a":
-            novo_x -= quant
-        elif movi == "d":
-            novo_x += quant
-        elif movi == "inventario":
-            player.inventario_(x=x_l + CAMERA_WIDTH + 5, y=y_l, werd=CAMERA_WIDTH + 2, herd=0, batalha=False)
-            continue
-        elif movi == "sair":
-            exit()
-        elif movi == "up":
-            player.up(x=x_l + CAMERA_WIDTH + 5, y=y_l, werd=CAMERA_WIDTH + 2, herd=CAMERA_HEIGHT + 2)
-            continue
-        elif movi == "q" and mapa_anterior:
-            exit()
+        if movi in direcoes:
+            dx, dy = direcoes[movi]
+            for _ in range(quant):
+                passo_x = player.x_mapa + dx
+                passo_y = player.y_mapa + dy
+                if 0 <= passo_x < MAP_WIDTH and 0 <= passo_y < MAP_HEIGHT:
+                    caractere = mapa_art[passo_y][passo_x]
+                    if caractere not in OBSTACULOS:
+                        player.x_mapa = passo_x
+                        player.y_mapa = passo_y
+                        if caractere in INTERACOES:
+                            INTERACOES[caractere]()
         else:
-            feedback_message = f"Comando '{movi}' inválido. Use w/a/s/d/inventario/up/q."
-            continue
-
-        if 0 <= novo_y < MAP_HEIGHT and 0 <= novo_x < MAP_WIDTH:
-            caractere = mapa_art[novo_y][novo_x]
-            if caractere not in OBSTACULOS:
-                player.x_mapa = novo_x
-                player.y_mapa = novo_y
-                if caractere in INTERACOES:
-                    INTERACOES[caractere]()
+            if movi == "inventario":
+                player.inventario_(x=x_l + CAMERA_WIDTH + 5, y=y_l, werd=CAMERA_WIDTH + 2, herd=0, batalha=False)
+            elif movi == "sair":
+                exit()
+            elif movi == "up":
+                player.up(x=x_l + CAMERA_WIDTH + 5, y=y_l, werd=CAMERA_WIDTH + 2, herd=CAMERA_HEIGHT + 2)
+            elif movi == "q" and mapa_anterior:
+                exit()
+            elif movi == "save":
+                player.save_game()
+                salvar_mapa_estado(save_filename, mapa_id, ESTADO_MAPAS[mapa_id])
+                feedback_message = "Jogo salvo com sucesso."
+            elif movi == "load":
+                estado_carregado = carregar_mapa_estado(save_filename)
+                player.load_game()
+                if estado_carregado:
+                    mapa_art = estado_carregado["mapa_art"]
+                    ESTADO_MAPAS[mapa_id]["mapa_art"] = mapa_art
+                    ESTADO_MAPAS[mapa_id]["inimigos_derrotados"] = set(estado_carregado["inimigos_derrotados"])
+                    ESTADO_MAPAS[mapa_id]["baus_abertos"] = set(estado_carregado["baus_abertos"])
+                    ESTADO_MAPAS[mapa_id]["interacoes"] = estado_carregado.get("interacoes", {})
+                    ESTADO_MAPAS[mapa_id]["obstaculos"] = estado_carregado["obstaculos"]
+                    ESTADO_MAPAS[mapa_id]["cores"] = estado_carregado.get("cores", {})
+            else:
+                feedback_message = f"Comando '{movi}' inválido. Use w/a/s/d/inventario/up/q."
+  
 
 
 mini_mapa(
-                x_l=0,
-                y_l=0,
-                player=player,
-                ascii=ascii,
-                mapas_=mapas.mapa_castelo_2.split('\n'),
-                camera_w=35,
-                camera_h=15,
-                x_p=7,
-                y_p=1,
-                menager="",
-                carater_ale="@",
-                quantidade_ale=10)
+    x_l=0,
+    y_l=0,
+    player=player,
+    ascii=ascii,
+    mapas_ = mapas.mapa_castelo.split("\n"),
+    x_p=10,
+    y_p=3, 
+    mapa_nome='catelo',
+    camera_w=35,
+    camera_h=15,
+    carater_ale='@',
+    quantidade_ale=10,
+    menager=""
+)

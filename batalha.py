@@ -6,7 +6,7 @@ from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musi
 from classe_arts import art_ascii
 ascii = art_ascii()
 player_b = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin=0)
-inimigo_b = inimigo(nome="", hp_max=0, atk=0, niv=0, xp=0, defesa=0, gold=0, art_ascii="",atk1="",atk2="")
+inimigo_b = inimigo(nome="", hp_max=0, atk=0, niv=0, xp=0, defesa=0, gold=0, art_ascii='',atk1="",atk2="")
 
 def seleção_inimigo(num = None, ):
     nome = ""
@@ -67,8 +67,8 @@ def batalha(player_b,inimigo_b):
         while True:
             clear()
             x_jogador = 30
-            inimigo_b.status_art(x_janela=31, y_janela=0)
-            player_b.status_batalha_art(x_janela=0, y_janela=0)
+            inimigo_b.status_art(x_janela=31, y_janela=0, wend = 31, herd = 11)
+            player_b.status_batalha_art(x_janela=0, y_janela=0, wend = 31, herd = 11)
             acoes = "[1]Atacar\n[2]Magias\n[3]Inventario\n[4]Fugir\n"
             acoes_text= acoes.count('\n')+1
             herd = acoes_text + 2
@@ -125,24 +125,16 @@ def batalha_cut(player_b, inimigo_b):
         while True:
             print(term.clear)
             x_jogador = 30
-            inimigo_b.status_art(x_janela=31, y_janela=0)
-            player_b.status_batalha_art(x_janela=0, y_janela=0)
-            acoes = "[1]Atacar\n[2]Magias\n[3]Inventario\n[4]Fugir\n"
+            inimigo_b.status_art(x_janela=31, y_janela=0, wend = 31, herd = 11)
+            player_b.status_batalha_art(x_janela=0, y_janela=0, wend = 31, herd = 11)
+            acoes = "[1]Atacar\n[2]Magias\n[3]Inventario\n"
             acoes_text= acoes.count('\n')+1
             herd = acoes_text + 2
             draw_window(term, x=x_jogador+32, y=0, width=25, height=herd, title="Ações",text_content=acoes)
-            with term.location(x=x_jogador+33, y=5):
+            with term.location(x=x_jogador+33, y=4):
                 escolha = input(">")
             acao_valida = False
-            if escolha == "4":
-                with term.location(x=x_jogador+32, y=7):
-                    print(term.bold_red("Você fugiu da batalha."))
-                    player_b.buff_atk = 0
-                    player_b.buff_def = 0
-                parar_musica()
-                time.sleep(2)
-                return True
-            elif escolha == "1":
+            if escolha == "1":
                 player_b.atake(inimigo_b, x_janela=0, y_janela=17)
                 acao_valida = True
             elif escolha == "2":

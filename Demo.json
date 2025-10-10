@@ -1,0 +1,35 @@
+{
+    "nome": "",
+    "hp_max": 100,
+    "hp": 100,
+    "atk": 150,
+    "niv": 1,
+    "xp_max": 100,
+    "defesa": 10,
+    "gold": 0,
+    "stm_max": 100,
+    "stm": 100,
+    "intt": 10,
+    "mn_max": 100,
+    "mana": 100,
+    "d_m": 20,
+    "xp": 0,
+    "aleatorio": 75,
+    "inventario": [],
+    "mana_lit": [],
+    "equipa": {
+        "m_pri": null,
+        "m_seg": null,
+        "c_cap": null,
+        "p_pet": null,
+        "s_crad": null
+    },
+    "itens_coletaodos": {
+        "item_1": true,
+        "item_2": false,
+        "Farol": false,
+        "Dentro_Farol": false
+    },
+    "rodar": false,
+    "classes": null
+}

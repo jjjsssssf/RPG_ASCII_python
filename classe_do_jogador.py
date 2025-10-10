@@ -6,7 +6,7 @@ from blessed import Terminal
 term = Terminal()
 art= art_ascii()
 class jogador:
-    def __init__(self, nome, hp_max, atk, niv, xp_max, defesa, gold, stm_max, intt, mn_max, d_m,art_player, skin, mana_lit=None):
+    def __init__(self, nome, hp_max, atk, niv, xp_max, defesa, gold, stm_max, intt, mn_max, d_m, art_player, skin, mana_lit=None):
         self.nome = nome
         self.skin = skin
         self.hp_max = hp_max
@@ -31,16 +31,9 @@ class jogador:
         self.art_player = art_player
         self.x_mapa = 0
         self.y_mapa = 0
-        self.mundo = {
-            'Cemiterio':False
-        }
-        self.classe= {
-            "Guerreiro":None,
-            "Mago":None,
-            "Negromante":None
-        }
+        self.boss = {'Suny': False}
         self.inventario = []
-        self.mana_lit = []
+        self.mana_lit = mana_lit if mana_lit else []
         self.equipa = {
             "m_pri": None,
             "m_seg": None,
@@ -54,8 +47,9 @@ class jogador:
             "Farol": False,
             "Dentro_Farol": False,
         }
-    
-    def save_game(self, filename="Demo.json", x_l=int, y_l =int):
+        self.classe = None  # Certifique-se de definir isso corretamente em algum lugar
+
+    def save_game(self, filename="Demo.json"):
         inventario_nomes = [item.nome for item in self.inventario]
         equipa_nomes = {slot: item.nome if item else None for slot, item in self.equipa.items()}
         player_data = {
@@ -85,21 +79,14 @@ class jogador:
         try:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(player_data, f, indent=4)
-            with term.location(x=x_l, y=y_l):
-                print(f"Jogo salvo com sucesso em")
-            with term.location(x=x_l, y=y_l+1):
-                print(f"'{filename}'")            
+            print(f"Jogo salvo com sucesso em '{filename}'")
         except IOError as e:
-            with term.location(x=x_l, y=y_l):
-                print(f"Erro ao salvar o jogo: {e}")
+            print(f"Erro ao salvar o jogo: {e}")
 
     @classmethod
-    def load_game(cls, filename="Demo.json", x_l=int, y_l =int):
+    def load_game(cls, filename="Demo.json"):
         if not os.path.exists(filename):
-            with term.location(x=x_l, y=y_l):
-                print(f"Nenhum arquivo de salvamento")
-            with term.location(x=x_l, y=y_l+1):
-                print(f"encontrado em '{filename}'.")
+            print(f"Nenhum arquivo de salvamento encontrado em '{filename}'.")
             return None
         try:
             with open(filename, 'r', encoding='utf-8') as f:
@@ -116,10 +103,13 @@ class jogador:
                 intt=player_data["intt"],
                 mn_max=player_data["mn_max"],
                 d_m=player_data["d_m"],
+                art_player=None,  # Ajuste conforme necessário
+                skin=None        # Ajuste conforme necessário
             )
+            # Ajuste para carregar inventário e equipa (assumindo que TODOS_OS_ITENS está definido)
             player.inventario = [TODOS_OS_ITENS[nome] for nome in player_data["inventario"]]
             player.equipa = {slot: TODOS_OS_ITENS[nome] if nome else None for slot, nome in player_data["equipa"].items()}
-            
+
             player.hp = player_data["hp"]
             player.aleatorio = player_data["aleatorio"]
             player.mana_lit = player_data["mana_lit"]
@@ -129,28 +119,12 @@ class jogador:
             player.stm = player_data["stm"]
             player.rodar_jogo = player_data["rodar"]
             player.classe = player_data["classes"]
+
             print(f"Jogo carregado com sucesso de '{filename}'!")
             return player
         except (IOError, json.JSONDecodeError, KeyError) as e:
-            with term.location(x=x_l, y=y_l):
-                print(f"Erro ao carregar o jogo: {e}.")
+            print(f"Erro ao carregar o jogo: {e}.")
             return None
-    
-    def menu(self, x_janela, y_janela):
-        menu = "[1]Status [2]Inventario\n[3]Magias [4]Save"
-        herd = 6
-        clear()
-        draw_window(term, x=x_janela, y=y_janela, width=30,height=herd, text_content=menu)
-        with term.location(x=x_janela+1, y=herd+y_janela-2):
-            escolha = input(">")
-        if escolha == "1":
-            self.status(x_janela=x_janela, y_janela=y_janela+6)
-        elif escolha == "2":
-            self.inventario_(x_inv=x_janela, y_inv=y_janela+6, batalha=False)
-        elif escolha == "3":
-            self.menu_magias(x_menu=0, y_menu=0, batalha=False, alvo=None)
-        elif escolha == "4":
-            self.save_game(filename=f"Demo.json")
 
     def barra_de_vida(self, x_l, y_l, largura=25):
         proporcao_hp = max(0, min(self.hp / self.hp_max, 1))
@@ -199,10 +173,10 @@ class jogador:
         art_player = self.art_player
         draw_window(term, x=x_janela, y=y_janela, width=31, height=11, text_content=art_player)
 
-    def status_batalha_art(self, x_janela, y_janela):
+    def status_batalha_art(self, x_janela, y_janela, wend, herd):
         art_player = self.art_player
-        draw_window(term, x=x_janela, y=y_janela, width=31, height=11, text_content=art_player)
-        self.status_batalha(x_janela=x_janela, y_janela=y_janela+11)
+        draw_window(term, x=x_janela, y=y_janela, width=wend, height=herd, text_content=art_player)
+        self.status_batalha(x_janela=x_janela, y_janela=y_janela+herd)
 
     def status_batalha(self, x_janela, y_janela):
         draw_window(term, x=x_janela, y=y_janela, width=31, height=6)
@@ -214,7 +188,7 @@ class jogador:
             print(f"AT: [{term.bold_red(str(self.atk))}-{term.red(str(self.buff_atk))}] DF: [{term.bold_cyan(str(self.defesa))}-{term.cyan(str(self.buff_def))}]")
         with term.location(x=x_janela+1, y=y_janela+4):
             print(f"Nivel: [{term.yellow(str(self.niv))}]")
-             
+
     def add_xp(self, xp_ganho):
         self.xp += xp_ganho
         while self.xp >= self.xp_max:

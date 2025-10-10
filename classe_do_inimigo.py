@@ -26,12 +26,15 @@ class inimigo:
         self.atk2 = atk2
         self.aleatorio_ = 50
 
-#Status do inimigo
-    def status_art(self, x_janela, y_janela):
+    def status_art(self, x_janela, y_janela, wend, herd):
         status_art = self.art_ascii
-        draw_window(term, x=x_janela, y=y_janela, width=31, height=11, text_content=status_art)
-        self.status(x_janela=x_janela, y_janela=y_janela+11)
-    
+        draw_window(term, x=x_janela, y=y_janela, width=wend, height=herd, text_content=status_art)
+        self.status(x_janela=x_janela, y_janela=y_janela+herd)
+
+    def status_art_boss(self, x_janela, y_janela, wend, herd):
+        status_art = self.art_ascii
+        draw_window(term, x=x_janela, y=y_janela, width=wend, height=herd, text_content=status_art)
+
     def status(self, x_janela, y_janela):
         draw_window(term, x=x_janela, y=y_janela, width=31, height=6)
         with term.location(x=x_janela+1, y=y_janela+1):
