@@ -5,11 +5,12 @@ from batalha import batalha, batalha_cut, seleção_inimigo
 from classe_arts import draw_window,term, clear, art_ascii, Cores, mini_mapa_, dialogos, clear_region_a
 from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musica
 from classe_do_inventario import TODOS_OS_ITENS, Item
+##ARQUIVO DO MAPA
 mapas = mini_mapa_()
 dialogo = dialogos()
 ascii = art_ascii()
 C = Cores()
-player = jogador(nome="", hp_max=100, atk=150, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="@")
+player = jogador(nome="", hp_max=100, atk=150, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="@", skin_nome='')
 def salvar_mapa_estado(filename, mapa_id, estado_mapa):
     try:
         with open(filename, 'w', encoding='utf-8') as f:
@@ -39,7 +40,7 @@ def carregar_mapa_estado(filename):
 def mini_mapa(
     x_l, y_l, player, ascii, mapas_, camera_w, camera_h, x_p, y_p, menager,
     cores_custom=None, obstaculos_custom=None, mapa_anterior=None, interacoes_custom=None, quantidade_map=None,
-    mapa_nome=None, carater_ale=str, quantidade_ale=int
+    mapa_nome=None
 ):
     ESTADO_MAPAS = {}
 
@@ -48,6 +49,9 @@ def mini_mapa(
     save_filename = f"save_mapa_{mapa_id}.json"
 
     estado_carregado = carregar_mapa_estado(save_filename)
+    if estado_carregado:
+        mapa_art = estado_carregado["mapa_art"]
+        max_width = max(len(linha) for linha in mapa_art)
 
     if estado_carregado:
         ESTADO_MAPAS[mapa_id] = {
@@ -62,24 +66,6 @@ def mini_mapa(
         raw_map_lines = mapas_
         max_width = max(len(l) for l in raw_map_lines if l.strip())
         mapa_art = [l.ljust(max_width) for l in raw_map_lines if l.strip()]
-        quantidade_caracteres = quantidade_map or {carater_ale: quantidade_ale}
-
-        posicoes_vazias = [
-            (y, x)
-            for y, linha in enumerate(mapa_art)
-            for x, char in enumerate(linha)
-            if char == ' '
-        ]
-        posicoes_disponiveis = posicoes_vazias.copy()
-
-        for caractere, quantidade in quantidade_caracteres.items():
-            if len(posicoes_disponiveis) == 0:
-                break
-            escolhidas = random.sample(posicoes_disponiveis, min(quantidade, len(posicoes_disponiveis)))        
-            for y, x in escolhidas:
-                linha_antiga = mapa_art[y]
-                mapa_art[y] = linha_antiga[:x] + caractere + linha_antiga[x+1:]
-                posicoes_disponiveis.remove((y, x))
 
         ESTADO_MAPAS[mapa_id] = {
             "mapa_art": mapa_art,
@@ -525,10 +511,8 @@ Foi adicionado uma Chave do Dragão'''
                     ESTADO_MAPAS[mapa_id]["cores"] = estado_carregado.get("cores", {})
             else:
                 feedback_message = f"Comando '{movi}' inválido. Use w/a/s/d/inventario/up/q."
-  
-
-
-mini_mapa(
+ 
+"""mini_mapa(
     x_l=0,
     y_l=0,
     player=player,
@@ -543,3 +527,5 @@ mini_mapa(
     quantidade_ale=10,
     menager=""
 )
+ 
+"""

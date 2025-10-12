@@ -5,7 +5,7 @@ from classe_do_inimigo import inimigo
 from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musica
 from classe_arts import art_ascii
 ascii = art_ascii()
-player_b = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin=0)
+player_b = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin=0,skin_nome='')
 inimigo_b = inimigo(nome="", hp_max=0, atk=0, niv=0, xp=0, defesa=0, gold=0, art_ascii='',atk1="",atk2="")
 
 def seleção_inimigo(num = None, ):

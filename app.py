@@ -1,4 +1,4 @@
-from jogo import mini_mapa
+from jogo import mini_mapa, carregar_mapa_estado
 from classe_arts import draw_window, term, clear, mini_mapa_
 import random, time, string
 from classe_do_jogador import jogador
@@ -6,10 +6,11 @@ from classe_do_inimigo import inimigo
 from classe_arts import art_ascii, Cores
 from mm import tocar_musica, escolher_e_tocar_musica, parar_musica, tocando_musica
 from classe_do_inventario import TODOS_OS_ITENS
+##arquivo do jogo
 ascii = art_ascii()
 mapas = mini_mapa_()
 C = Cores()
-jj = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="0")
+jj = jogador(nome="", hp_max=100, atk=15, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="0",skin_nome='')
 ee = inimigo(nome="", hp_max=0, atk=0, niv=0, xp=0, defesa=0, gold=0, art_ascii="",atk1="",atk2="")
 thread_musica = None
 
@@ -27,7 +28,7 @@ def menu_inicial(x_l, y_l):
             escolha = input(">")
         if escolha == "1":
             nome = solicitar_nome(x_l, y_l, menu_art)
-            skin, caractere, cor_final = escolher_personagem(x_l, y_l)
+            skin_arte, cor_final, skin_nome = escolher_personagem(x_l, y_l) 
             jj = jogador(
                 nome=nome,
                 hp_max=50,
@@ -40,8 +41,9 @@ def menu_inicial(x_l, y_l):
                 intt=0,
                 mn_max=50,
                 d_m=15,
-                art_player=skin,
-                skin=cor_final
+                art_player=skin_arte, 
+                skin=cor_final,     
+                skin_nome=skin_nome 
             )
             mini_mapa(
                 x_l=0,
@@ -53,15 +55,40 @@ def menu_inicial(x_l, y_l):
                 camera_h=15,
                 x_p=5,
                 y_p=3,
-                menager="",)
+                menager="",
+                mapa_nome='castelo_1')
 
         elif escolha == "2":
-            draw_window(term, x=x_l, y=y_l, width=90, height=24, text_content=menu_art)
-            draw_window(term, x=x_l+25, y=y_l+herd+1, width=30, height=6)
-            jj.load_game(filename="Demo.json", x_l=x_l+26, y_l=y_l+herd+2)
-            with term.location(x=x_l+26, y=y_l+herd+5):
-                input(">")
-
+            player_carregado = jogador.load_game(filename="DEMO.json")
+            
+            if player_carregado:
+                jj = player_carregado
+                mapa_nome_load = jj.mapa_atual
+                mapa_art_para_load = {
+                    "castelo_1": mapas.mapa_castelo.split('\n'),
+                    "castelo_2": mapas.mapa_castelo_2.split('\n'),
+                    "biblica": mapas.biblioteca.split('\n'),
+                    "taberna": mapas.taberna.split('\n'),
+                    "Suny": mapas.boss_1.split('\n')
+                }.get(mapa_nome_load, mapas.mapa_castelo.split('\n'))
+                x_p_load = jj.x_mapa
+                y_p_load = jj.y_mapa
+                mini_mapa(
+                    x_l=0,
+                    y_l=0,
+                    player=jj,
+                    ascii=ascii,
+                    mapas_=mapa_art_para_load,
+                    camera_w=35,
+                    camera_h=15,
+                    x_p=x_p_load,
+                    y_p=y_p_load,
+                    menager="",
+                    mapa_nome=mapa_nome_load,
+                )
+            
+            else:
+                pass
         elif escolha == "3":
             exit()
 
@@ -82,12 +109,12 @@ def solicitar_nome(x_l, y_l, menu_art):
             mostrar_mensagem(x_l+26, y_l+num_linhas+5, "Digite pelo menos 1 letra")
         else:
             return nome
-
+        
 def escolher_personagem(x_l, y_l):
     personagens = {
-        "1": ascii.necro,
-        "2": ascii.guerriro,
-        "3": ascii.mago
+        "1": {"nome": "necro", "arte": ascii.necro},
+        "2": {"nome": "guerreiro", "arte": ascii.guerriro},
+        "3": {"nome": "mago", "arte": ascii.mago}
     }
     while True:
         clear()
@@ -100,10 +127,14 @@ def escolher_personagem(x_l, y_l):
             escolha = input("Escolha uma Skin: ")
 
         if escolha in personagens:
-            skin = personagens[escolha]
+            skin_data = personagens[escolha]
+            skin_arte = skin_data["arte"]
+            skin_nome = skin_data["nome"]
+            
             caractere = solicitar_caractere(x_l, y_l)
             cor_final = escolher_cor(caractere, x_l, y_l)
-            return skin, caractere, cor_final
+            
+            return skin_arte, cor_final, skin_nome
 
 def solicitar_caractere(x_l, y_l):
     while True:
@@ -116,7 +147,6 @@ def solicitar_caractere(x_l, y_l):
         else:
             with term.location(x=x_l+2, y=y_l+15):
                 print("Use apenas UM caractere")
-            time.sleep(2)
 
 def escolher_cor(caractere, x_l, y_l):
     cores = {
@@ -138,6 +168,5 @@ def escolher_cor(caractere, x_l, y_l):
 def mostrar_mensagem(x, y, mensagem):
     with term.location(x, y):
         print(mensagem)
-    time.sleep(2)
 
 menu_inicial(x_l=0, y_l=0)

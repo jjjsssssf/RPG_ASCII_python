@@ -5,12 +5,15 @@ from collections import defaultdict
 from blessed import Terminal
 term = Terminal()
 art= art_ascii()
+##ARQUIVO DO JOGADOR
 class jogador:
-    def __init__(self, nome, hp_max, atk, niv, xp_max, defesa, gold, stm_max, intt, mn_max, d_m, art_player, skin, mana_lit=None):
+    def __init__(self, nome, hp_max, atk, niv, xp_max, defesa, gold, stm_max, intt, mn_max, d_m, art_player, skin, skin_nome, mana_lit=None):
         self.nome = nome
         self.skin = skin
+        self.skin_nome = skin_nome
         self.hp_max = hp_max
         self.hp = self.hp_max
+        self.mapa_atual = "castelo_1"
         self.mana_max = mn_max
         self.mana = self.mana_max
         self.stm_max = stm_max
@@ -47,7 +50,7 @@ class jogador:
             "Farol": False,
             "Dentro_Farol": False,
         }
-        self.classe = None  # Certifique-se de definir isso corretamente em algum lugar
+        self.classe = None 
 
     def save_game(self, filename="Demo.json"):
         inventario_nomes = [item.nome for item in self.inventario]
@@ -75,6 +78,11 @@ class jogador:
             "itens_coletaodos": self.itens_coletaodos,
             "rodar": self.rodar_jogo,
             "classes": self.classe,
+            "pos_x": self.x_mapa,
+            "pos_y": self.y_mapa,
+            "mapa_atual": self.mapa_atual,
+            "char_skin": self.skin,  # Caractere colorido
+            "art_player_nome": self.skin_nome, # Nome da arte ASCII
         }
         try:
             with open(filename, 'w', encoding='utf-8') as f:
@@ -91,6 +99,14 @@ class jogador:
         try:
             with open(filename, 'r', encoding='utf-8') as f:
                 player_data = json.load(f)
+            SKIN_MAP = {
+                "necro": art.necro,
+                "guerreiro": art.guerriro,
+                "mago": art.mago
+            }
+            skin_nome_carregado = player_data.get("art_player_nome")
+            skin_arte_carregada = SKIN_MAP.get(skin_nome_carregado) or None
+
             player = cls(
                 nome=player_data["nome"],
                 hp_max=player_data["hp_max"],
@@ -103,28 +119,32 @@ class jogador:
                 intt=player_data["intt"],
                 mn_max=player_data["mn_max"],
                 d_m=player_data["d_m"],
-                art_player=None,  # Ajuste conforme necessário
-                skin=None        # Ajuste conforme necessário
+                art_player=skin_arte_carregada,
+                skin=player_data.get("char_skin", "@"),
+                skin_nome=skin_nome_carregado,
             )
-            # Ajuste para carregar inventário e equipa (assumindo que TODOS_OS_ITENS está definido)
-            player.inventario = [TODOS_OS_ITENS[nome] for nome in player_data["inventario"]]
-            player.equipa = {slot: TODOS_OS_ITENS[nome] if nome else None for slot, nome in player_data["equipa"].items()}
+
+            player.inventario = [TODOS_OS_ITENS[nome] for nome in player_data.get("inventario", []) if nome in TODOS_OS_ITENS]
+            player.equipa = {slot: TODOS_OS_ITENS[nome] if nome and nome in TODOS_OS_ITENS else None for slot, nome in player_data.get("equipa", {}).items()}
 
             player.hp = player_data["hp"]
             player.aleatorio = player_data["aleatorio"]
-            player.mana_lit = player_data["mana_lit"]
-            player.itens_coletaodos = player_data["itens_coletaodos"]
+            player.mana_lit = player_data.get("mana_lit", [])
+            player.itens_coletaodos = player_data.get("itens_coletaodos", {})
             player.xp = player_data["xp"]
             player.mana = player_data["mana"]
             player.stm = player_data["stm"]
             player.rodar_jogo = player_data["rodar"]
             player.classe = player_data["classes"]
+            player.x_mapa = player_data.get("pos_x", 0)
+            player.y_mapa = player_data.get("pos_y", 0)
+            player.mapa_atual = player_data.get("mapa_atual", "castelo_1")
 
             print(f"Jogo carregado com sucesso de '{filename}'!")
             return player
         except (IOError, json.JSONDecodeError, KeyError) as e:
             print(f"Erro ao carregar o jogo: {e}.")
-            return None
+            return None    
 
     def barra_de_vida(self, x_l, y_l, largura=25):
         proporcao_hp = max(0, min(self.hp / self.hp_max, 1))
