@@ -31,7 +31,7 @@ def menu_inicial(x_l, y_l):
             skin_arte, cor_final, skin_nome = escolher_personagem(x_l, y_l) 
             jj = jogador(
                 nome=nome,
-                hp_max=50,
+                hp_max=75,
                 atk=10,
                 niv=1,
                 xp_max=100,
@@ -59,7 +59,7 @@ def menu_inicial(x_l, y_l):
                 mapa_nome='castelo_1')
 
         elif escolha == "2":
-            player_carregado = jogador.load_game(filename="DEMO.json")
+            player_carregado = jogador.load_game(filename="demo.json")
             
             if player_carregado:
                 jj = player_carregado
@@ -71,6 +71,7 @@ def menu_inicial(x_l, y_l):
                     "taberna": mapas.taberna.split('\n'),
                     "Suny": mapas.boss_1.split('\n')
                 }.get(mapa_nome_load, mapas.mapa_castelo.split('\n'))
+                
                 x_p_load = jj.x_mapa
                 y_p_load = jj.y_mapa
                 mini_mapa(
@@ -88,7 +89,7 @@ def menu_inicial(x_l, y_l):
                 )
             
             else:
-                pass
+                pass 
         elif escolha == "3":
             exit()
 

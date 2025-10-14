@@ -13,7 +13,7 @@ C = Cores()
 player = jogador(nome="", hp_max=100, atk=150, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="@", skin_nome='')
 def salvar_mapa_estado(filename, mapa_id, estado_mapa):
     try:
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, 'w', encoding='utf-8') as f: 
             json.dump({
                 "mapa_id": mapa_id,
                 "mapa_art": estado_mapa["mapa_art"],
@@ -25,18 +25,17 @@ def salvar_mapa_estado(filename, mapa_id, estado_mapa):
             }, f, indent=4)
         print(f"Estado do mapa salvo com sucesso.")
     except IOError as e:
-        print(f"Erro ao salvar o estado do mapa: {e}")
+        print(f"Erro ao salvar o estado do mapa: {e}") 
 
 def carregar_mapa_estado(filename):
-    if not os.path.exists(filename):
+    if not os.path.exists(filename): 
         return None
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, 'r', encoding='utf-8') as f: 
             return json.load(f)
     except Exception as e:
-        print(f"Erro ao carregar estado do mapa: {e}")
+        print(f"Erro ao carregar estado do mapa: {e}") 
         return None
-
 def mini_mapa(
     x_l, y_l, player, ascii, mapas_, camera_w, camera_h, x_p, y_p, menager,
     cores_custom=None, obstaculos_custom=None, mapa_anterior=None, interacoes_custom=None, quantidade_map=None,
@@ -197,8 +196,6 @@ def mini_mapa(
                         "obstaculos": OBSTACULOS
                     },
                     mapa_nome="castelo_2",
-                    carater_ale="@",
-                    quantidade_ale=10
                 )
                 return
 
@@ -269,8 +266,6 @@ def mini_mapa(
                         "obstaculos": OBSTACULOS
                     },
                     mapa_nome="biblica",
-                    carater_ale="",
-                    quantidade_ale=0,
                     cores_custom=core_custom,
                     obstaculos_custom=colisoes
                 )
@@ -306,8 +301,6 @@ def mini_mapa(
                         "obstaculos": OBSTACULOS
                     },
                     mapa_nome="Suny",
-                    carater_ale="",
-                    quantidade_ale=0,
                     cores_custom=core_custom,
                     obstaculos_custom=colisoes
                 )
@@ -333,8 +326,6 @@ def mini_mapa(
                         "obstaculos": OBSTACULOS
                     },
                     mapa_nome="taberna",
-                    carater_ale="&",
-                    quantidade_ale=5,
                 )
                 return
                 
@@ -359,8 +350,6 @@ def mini_mapa(
                         "obstaculos": OBSTACULOS
                     },
                     mapa_nome="castelo_2",
-                    carater_ale="@",
-                    quantidade_ale=10
                 )
                 return
 
@@ -399,8 +388,6 @@ se aproxime do vendedor'''
                         "obstaculos": OBSTACULOS
                     },
                     mapa_nome="castelo_2",
-                    carater_ale="@",
-                    quantidade_ale=10
                 )
                 return
 
@@ -441,8 +428,6 @@ Foi adicionado uma Chave do Dragão'''
                         "obstaculos": OBSTACULOS
                     },
                     mapa_nome="castelo_2",
-                    carater_ale="@",
-                    quantidade_ale=10
                 )
                 return
                 

@@ -52,7 +52,7 @@ class jogador:
         }
         self.classe = None 
 
-    def save_game(self, filename="Demo.json"):
+    def save_game(self, filename="demo.json"):
         inventario_nomes = [item.nome for item in self.inventario]
         equipa_nomes = {slot: item.nome if item else None for slot, item in self.equipa.items()}
         player_data = {
@@ -92,7 +92,7 @@ class jogador:
             print(f"Erro ao salvar o jogo: {e}")
 
     @classmethod
-    def load_game(cls, filename="Demo.json"):
+    def load_game(cls, filename="demo.json"):
         if not os.path.exists(filename):
             print(f"Nenhum arquivo de salvamento encontrado em '{filename}'.")
             return None
@@ -223,9 +223,21 @@ class jogador:
         print(f"Você ganhou {xp_ganho} de XP. Total: {self.xp}/{self.xp_max}")
         time.sleep(2)
 
-    def up(self, x, y,werd,herd):
+    def up(self, x, y, werd, herd):
+        STATUS_MAP = {
+            "HP": ("hp_max", "HP"),
+            "MP": ("stm_max", "MP"),
+            "ATK": ("atk", "ATK"),
+            "DEF": ("defesa", "DEF"),
+            "MG": ("mana_max", "Poder Mágico (MG)"),
+            "MA": ("dano_magico", "Dano Mágico (MA)"),
+            "INT": ("intt", "INT"),
+            "SAIR": ("sair", "Sair do menu")
+        }
+
         while True:
-            clear_region_a(x=x,start_y=herd, end_y=herd-1, width=werd)
+            clear_region_a(x=x, start_y=herd, end_y=herd-1, width=werd) 
+
             mensagem = f"""Pontos: [{self.ponto}]
 HP: [{self.hp_max}]
 MP: [{self.stm_max}]
@@ -234,62 +246,36 @@ DEF: [{self.defesa}]
 MG: [{self.mana_max}]
 MA: [{self.dano_magico}]
 INT: [{self.intt}]
-Digite o Nome do Status que
-Deseja Melhorar. diter sair
-para sair"""
+Digite o Nome do Status (ou SAIR):"""
+            
             draw_window(term, x=x, y=y, width=werd, height=herd, text_content=mensagem)
             if self.ponto >= 1:
                 with term.location(x=werd+5, y=herd-5):
-                    up_ = input(">")
+                    up_input = input(">").strip().upper() 
             else:
                 with term.location(x=werd+5, y=herd-5):
-                    print("Você não tem Pontos")
+                    print("Você não tem Pontos para melhorar.")
                     input()
                     break
-            if up_ == "Sair":
+            if up_input == "SAIR":
                 break
-            elif up_ == "HP":
-                with term.location(x=werd+4, y=herd-5):
-                    print(f"Você Melhorou seu HP")
-                time.sleep(2)
+            if up_input in STATUS_MAP:
+                attr_name, display_name = STATUS_MAP[up_input]
+                current_value = getattr(self, attr_name)
+                setattr(self, attr_name, current_value + 3)
                 self.ponto -= 1
-                self.hp_max += 3
-            elif up_ == "MP":
                 with term.location(x=werd+4, y=herd-5):
-                    print(f"Você Melhorou seu MP")
-                time.sleep(2)
-                self.ponto -= 1
-                self.stm_max += 3
-            elif up_ == "ATK":
+                    print(" " * 40) 
                 with term.location(x=werd+4, y=herd-5):
-                    print(f"Você Melhorou seu ATK")
+                    print(f"Você melhorou seu {display_name}! (-1 Ponto)")
                 time.sleep(2)
-                self.ponto -= 1
-                self.atk += 3
-            elif up_ == "DEF":
+                
+            else:
                 with term.location(x=werd+4, y=herd-5):
-                    print(f"Você Melhorou seu DEF")
-                time.sleep(2)
-                self.ponto -= 1
-                self.defesa += 3
-            elif up_ == "MG":
+                    print(" " * 40)
                 with term.location(x=werd+4, y=herd-5):
-                    print(f"Você Melhorou seu Mg")
+                    print("Comando inválido. Tente HP, ATK, etc.")
                 time.sleep(2)
-                self.ponto -= 1
-                self.mana_max += 3
-            elif up_ == "MP":
-                with term.location(x=werd+4, y=herd-5):
-                    print(f"Você Melhorou seu MA")
-                time.sleep(2)
-                self.ponto -= 1
-                self.dano_magico += 3
-            elif up_ == "INT":
-                with term.location(x=werd+4, y=herd-5):
-                    print(f"Você Melhorou seu INT")
-                time.sleep(2)
-                self.ponto -= 1
-                self.intt += 3
 
     def aprender_magias(self, term, x_menu, y_menu, wend, herd):
         term = Terminal()
