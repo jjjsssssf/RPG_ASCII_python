@@ -53,6 +53,8 @@ class inimigo:
             meno_defsa = alvo.defesa + alvo.buff_def
             mm = meno_defsa // 4
             dano_final = int(dano_ale - mm)
+            if dano_final <= 0:
+                dano_final = 1
             mensagem = f"""{str(self.nome)} usou {str(self.atk1)} em {str(alvo.nome)}\ndeu um dano de {str(dano_final)}"""
             alvo.hp -= dano_final
         else:
@@ -66,6 +68,8 @@ class inimigo:
             dano_ale = random.randint(int(self.atk - 3), int(self.atk + 3))
             meno_defsa = alvo.defesa + alvo.buff_def // 4 
             dano_final = int(1.5 * dano_ale - meno_defsa)
+            if dano_final <= 0:
+                dano_final = 1
             mensagem = f"""{str(self.nome)} usou {str(self.atk2)} em {str(alvo.nome)}\ndeu um dano de {str(dano_final)}"""
             alvo.hp -= dano_final
             time.sleep(1)

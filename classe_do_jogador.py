@@ -23,7 +23,7 @@ class jogador:
         self.buff_def = 0
         self.intt = intt
         self.niv = niv
-        self.ponto = 1000
+        self.ponto = 0
         self.xp_max = xp_max
         self.dano_magico = d_m
         self.xp = 0
@@ -236,7 +236,7 @@ class jogador:
         }
 
         while True:
-            clear_region_a(x=x, start_y=herd, end_y=herd-1, width=werd) 
+            clear_region_a(x=x, start_y=herd, end_y=herd-1, width=werd)
 
             mensagem = f"""Pontos: [{self.ponto}]
 HP: [{self.hp_max}]
@@ -246,36 +246,47 @@ DEF: [{self.defesa}]
 MG: [{self.mana_max}]
 MA: [{self.dano_magico}]
 INT: [{self.intt}]
-Digite o Nome do Status (ou SAIR):"""
-            
+Digite o Nome do Status e Quantidade (ex: HP 5) ou SAIR:"""
+
             draw_window(term, x=x, y=y, width=werd, height=herd, text_content=mensagem)
+
             if self.ponto >= 1:
-                with term.location(x=werd+5, y=herd-5):
-                    up_input = input(">").strip().upper() 
+                with term.location(x=werd+1, y=herd-6):
+                    up_input = input(">").strip().upper()
             else:
-                with term.location(x=werd+5, y=herd-5):
+                with term.location(x=werd+1, y=herd-5):
                     print("Você não tem Pontos para melhorar.")
                     input()
                     break
+
             if up_input == "SAIR":
                 break
-            if up_input in STATUS_MAP:
-                attr_name, display_name = STATUS_MAP[up_input]
-                current_value = getattr(self, attr_name)
-                setattr(self, attr_name, current_value + 3)
-                self.ponto -= 1
-                with term.location(x=werd+4, y=herd-5):
-                    print(" " * 40) 
-                with term.location(x=werd+4, y=herd-5):
-                    print(f"Você melhorou seu {display_name}! (-1 Ponto)")
-                time.sleep(2)
-                
+
+            parts = up_input.split()
+            if len(parts) == 2:
+                stat_name, amount_str = parts
+                if stat_name in STATUS_MAP and amount_str.isdigit():
+                    amount = int(amount_str)
+                    if amount <= 0:
+                        msg = "Digite um número maior que zero."
+                    elif amount > self.ponto:
+                        msg = f"Você só tem {self.ponto} ponto(s)."
+                    else:
+                        attr_name, display_name = STATUS_MAP[stat_name]
+                        current_value = getattr(self, attr_name)
+                        setattr(self, attr_name, current_value + (amount * 3))
+                        self.ponto -= amount
+                        msg = f"Você melhorou seu {display_name}"
+                else:
+                    msg = "Comando inválido.Tente algo como: HP 5"
             else:
-                with term.location(x=werd+4, y=herd-5):
-                    print(" " * 40)
-                with term.location(x=werd+4, y=herd-5):
-                    print("Comando inválido. Tente HP, ATK, etc.")
-                time.sleep(2)
+                msg = "Formato inválido.Use: STATUS QUANTIDADE"
+
+            with term.location(x=werd+1, y=herd-5):
+                print(" " * 50)
+            with term.location(x=werd+1, y=herd-5):
+                print(msg)
+            time.sleep(2)
 
     def aprender_magias(self, term, x_menu, y_menu, wend, herd):
         term = Terminal()
@@ -423,6 +434,8 @@ DEF: [{magia.bonus_def}]"""
                 dano_ale = random.randint(int(self.atk - 3), int(self.atk + 3))
                 meno_defsa = alvo.defesa // 4
                 dano_final = int(self.buff_atk + dano_ale - meno_defsa)
+                if dano_final <= 0:
+                    dano_final = 1
                 mensagem = f"{str(self.nome)} deu um dano de {str(dano_final)}\nno {str(alvo.nome)}"
                 alvo.hp -= dano_final
                 time.sleep(1)
@@ -435,49 +448,66 @@ DEF: [{magia.bonus_def}]"""
         herd = 4
         draw_window(term, x_janela, y_janela, width=len(mensagem)-5, height=herd, text_content=mensagem)
     
-    def inventario_(self, x, y, werd, herd,batalha):
+    def inventario_(self, x, y, werd, herd, batalha):
         text_content = ""
         contagem_itens = defaultdict(int)
-        
+        lista_itens = []
+
         for item_obj in self.inventario:
             contagem_itens[item_obj.nome] += 1
-        
+
         if not self.inventario:
             text_content = "Não tem nada no inventário.\n"
         else:
+            index = 1
             for item_nome, quantidade in contagem_itens.items():
                 item_obj = TODOS_OS_ITENS[item_nome]
                 estado = ""
                 if item_obj.slot_equip and self.equipa.get(item_obj.slot_equip) and self.equipa[item_obj.slot_equip].nome == item_obj.nome:
                     estado = "[Equipado]"
-                text_content += f"{item_obj.nome} (x{quantidade}) {estado}\n"
-        
-        text_content += "Digite o nome do item para usar\ndigite 'sair' para sair"
+                text_content += f"[{index}] {item_obj.nome} (x{quantidade}) {estado}\n"
+                lista_itens.append(item_obj)
+                index += 1
+
+        text_content += "Escolha um número para usar o item\nDigite 'sair' para sair"
         num_linhas_texto = text_content.count('\n') + 1
         altura_janela = num_linhas_texto + 4
+
         while True:
-            clear_region_a(x=x,start_y=altura_janela, end_y=altura_janela-1, width=werd)
+            clear_region_a(x=x, start_y=altura_janela, end_y=altura_janela - 1, width=werd)
             draw_window(term, x, y, width=werd, height=altura_janela, title="Inventário", text_content=text_content)
             x_input = x + 2
             y_input = y + altura_janela - 3
             with term.location(x_input, y_input):
                 escolha = input(">")
+
             if escolha.lower() == "sair":
                 return False
-            if escolha in TODOS_OS_ITENS and escolha in contagem_itens:
-                item_escolhido = TODOS_OS_ITENS[escolha]
-                if batalha:
-                    if item_escolhido.tipo == "Consumivel":
-                        return self.usar_consumivel(item_escolhido, x, y + altura_janela + 1, werd)
-                    elif item_escolhido.tipo == "Equipavel":
-                        mensagem = "Você não pode usar\num equipamento em batalha!"
-                        draw_window(term, x=x, y=y + altura_janela, width=werd, height=4, text_content=mensagem)
-                        time.sleep(3)
+
+            if escolha.isdigit():
+                escolha_index = int(escolha) - 1
+                if 0 <= escolha_index < len(lista_itens):
+                    item_escolhido = lista_itens[escolha_index]
+                    if batalha:
+                        if item_escolhido.tipo == "Consumivel":
+                            return self.usar_consumivel(item_escolhido, x, y + altura_janela + 1, werd)
+                        elif item_escolhido.tipo == "Equipavel":
+                            mensagem = "Você não pode usar\num equipamento em batalha!"
+                            draw_window(term, x=x, y=y + altura_janela, width=werd, height=4, text_content=mensagem)
+                            time.sleep(3)
+                    else:
+                        if item_escolhido.tipo == "Consumivel":
+                            self.usar_consumivel(item_escolhido, x, y + altura_janela, werd)
+                        elif item_escolhido.tipo == "Equipavel":
+                            self.gerenciar_equipavel(item_escolhido, x, y + altura_janela, werd)
                 else:
-                    if item_escolhido.tipo == "Consumivel":
-                        self.usar_consumivel(item_escolhido, x, y + altura_janela, werd)
-                    elif item_escolhido.tipo == "Equipavel":
-                        self.gerenciar_equipavel(item_escolhido, x, y + altura_janela, werd)
+                    mensagem = "Número inválido."
+                    draw_window(term, x=x, y=y + altura_janela, width=werd, height=3, text_content=mensagem)
+                    time.sleep(2)
+            else:
+                mensagem = "Entrada inválida."
+                draw_window(term, x=x, y=y + altura_janela, width=werd, height=3, text_content=mensagem)
+                time.sleep(2)
 
     def usar_consumivel(self, item, x_janela, y_janela, werd):
         altura_mensagem = 3
@@ -568,7 +598,7 @@ DEF: [{magia.bonus_def}]"""
             elif escolha == "3":
                 return
             else:
-                self._mensagem_temp("Opção inválida.", x, y + 8, largura)
+                print("Opção inválida.", x, y + 8, largura)
 
     def comprar_itens(self, x, y, largura):
         while True:
@@ -657,9 +687,11 @@ DEF: [{magia.bonus_def}]"""
                     preco = item.preco // 2
                     self.gold += preco
                     self.inventario.remove(item)
-                    self._mensagem_temp(f"Você vendeu {item.nome} por {preco} moedas.", x, y + altura, largura)
+                    with term.location(x=0, y=altura+1):
+                        print(f"Você vendeu {item.nome} por {preco} moedas.")
                 except (ValueError, IndexError):
-                    self._mensagem_temp("Opção inválida.", x, y + altura, largura)
+                    with term.location(x=largura, y=y):
+                        ("Opção inválida.", x, y + altura, largura)
 
     def hospital(self, x_, y_):
         with term.location(x=x_, y=y_):
@@ -668,74 +700,4 @@ DEF: [{magia.bonus_def}]"""
         self.stm = self.stm_max
         self.mana = self.mana_max
         time.sleep(3)
-
-    def mapa(self):
-        with term.location(32, 2):
-            print(term.bold_gray("+=Mapa=============================+"))
-        with term.location(33, 3):
-            print(term.italic_yellow_on_black("[CAVERNA]") + term.bold_green("."*19) + term.italic_magenta("[VILA]"))
-        with term.location(33, 4):
-            print(term.bold_gray(":::::::::")+term.bold_green("....")+term.italic_green_on_black("[FLORETA]")+term.bold_green("###........."))
-        with term.location(33, 5):
-            print(term.italic_white("[MONTANHA]")+term.bold_green("........................"))
-        with term.location(33, 6):
-            print(term.bold_gray(":::::::::")+term.bold_green(".............")+term.bold_yellow("************"))
-        with term.location(33, 7):
-            print(term.italic_red("[FAROL]")+term.bold_green("............")+term.italic_yellow("**[DESERTO]****"))
-        with term.location(33, 8):
-            print(term.bold_cyan("~~~~~~~~~~~~~~~~~~")+term.bold_yellow("****************"))
-        with term.location(33, 9):
-            print(term.bold_cyan("~~~")+term.italic_cyan("[MAR]")+term.bold_cyan("~~~~~~~~~~~~~~~~~~~~~~~~~~"))
-        with term.location(32, 10):
-            print(term.bold_gray("+==================================+"))
-
-    def ver_mapa(self):
-        local = ""
-        if self.locais["Vila"] == True:
-            local = "Vila"
-        elif self.locais["Farol"] == True:
-            local = "Farol"
-        elif self.locais["Caverna"] == True:
-            local = "Caverna"
-        elif self.locais["Montanha"] == True:
-            local = "Montanha"
-        elif self.locais["Floresta"] == True:
-            local = "Floresta"
-        elif self.locais["Mar"] == True:
-            local = "Mar"
-        elif self.locais["Deserto"] == True:
-            local = "Deserto"
-        
-        if self.itens_coletaodos["item_1"]== True:
-            clear()
-            self.mapa()
-            with term.location(32, 11):
-                print(f"Você está na: {local}")
-            with term.location(32, 12):
-                input(">")
-        else:
-            print("Você não tem um Mapa")
-
-    def escolha_(self, x_l , y_l):
-        menu = "Escolha seu Nome:\n"
-        draw_window(term, x=x_l, y=y_l, width=30, height=6, text_content=menu)
-        with term.location(x=x_l+2, y=y_l+2):
-            escolha_nome = input(">")
-        if len(escolha_nome) > 8:
-            with term.location(x=x_l+1, y=y_l+3):
-                print("Nome muito extenço use")
-            with term.location(x=x_l+1, y=y_l+4):
-                print("apenas 8 letras")
-            time.sleep(2)
-        elif len(escolha_nome) < 1:
-            with term.location(x=x_l+1, y=y_l+3):
-                print("Utilize uma letra no minimo")
-            time.sleep(2)
-        else:
-            text = "[1]Mago\n[2]Guerreiro\n[3]Negromante"
-            draw_window(term, x=x_l+30, y=y_l,width=18,height=6, text_content=text)
-            with term.location(x=x_l+31, y=y_l+4):
-                escolha_classe = input(">")
-            if escolha_classe == "1":
-                self.nome = escolha_classe
 

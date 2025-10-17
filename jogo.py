@@ -10,7 +10,7 @@ mapas = mini_mapa_()
 dialogo = dialogos()
 ascii = art_ascii()
 C = Cores()
-player = jogador(nome="", hp_max=100, atk=150, niv=1, xp_max=100, defesa=10, gold=0, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="@", skin_nome='')
+player = jogador(nome="", hp_max=100, atk=10, niv=1, xp_max=100, defesa=100, gold=11110, stm_max=100, intt=10, mn_max=100,d_m=20, art_player=ascii.necro, skin="@", skin_nome='')
 def salvar_mapa_estado(filename, mapa_id, estado_mapa):
     try:
         with open(filename, 'w', encoding='utf-8') as f: 
@@ -23,9 +23,8 @@ def salvar_mapa_estado(filename, mapa_id, estado_mapa):
                 "obstaculos": estado_mapa["obstaculos"],
                 "cores": estado_mapa.get("cores", {})
             }, f, indent=4)
-        print(f"Estado do mapa salvo com sucesso.")
     except IOError as e:
-        print(f"Erro ao salvar o estado do mapa: {e}") 
+        pass
 
 def carregar_mapa_estado(filename):
     if not os.path.exists(filename): 
@@ -36,14 +35,17 @@ def carregar_mapa_estado(filename):
     except Exception as e:
         print(f"Erro ao carregar estado do mapa: {e}") 
         return None
+
 def mini_mapa(
     x_l, y_l, player, ascii, mapas_, camera_w, camera_h, x_p, y_p, menager,
-    cores_custom=None, obstaculos_custom=None, mapa_anterior=None, interacoes_custom=None, quantidade_map=None,
+    cores_custom=None, obstaculos_custom=None, mapa_anterior=None, interacoes_custom=None,   
     mapa_nome=None
 ):
     ESTADO_MAPAS = {}
 
     mapa_id = mapa_nome or id(mapas_)
+    if mapa_nome:
+        player.mapa_atual = mapa_nome
 
     save_filename = f"save_mapa_{mapa_id}.json"
 
@@ -51,16 +53,16 @@ def mini_mapa(
     if estado_carregado:
         mapa_art = estado_carregado["mapa_art"]
         max_width = max(len(linha) for linha in mapa_art)
-
+    
     if estado_carregado:
         ESTADO_MAPAS[mapa_id] = {
-            "mapa_art": estado_carregado["mapa_art"],
-            "inimigos_derrotados": set(estado_carregado["inimigos_derrotados"]),
-            "baus_abertos": set(estado_carregado["baus_abertos"]),
-            "interacoes": estado_carregado.get("interacoes", {}),
-            "obstaculos": estado_carregado["obstaculos"],
-            "cores": estado_carregado.get("cores", {})
-        }
+    "mapa_art": estado_carregado["mapa_art"],
+    "inimigos_derrotados": set(tuple(pos) for pos in estado_carregado["inimigos_derrotados"]),
+    "baus_abertos": set(tuple(pos) for pos in estado_carregado["baus_abertos"]),
+    "interacoes": estado_carregado.get("interacoes", {}),
+    "obstaculos": estado_carregado["obstaculos"],
+    "cores": estado_carregado.get("cores", {})
+}
     else:
         raw_map_lines = mapas_
         max_width = max(len(l) for l in raw_map_lines if l.strip())
@@ -110,7 +112,7 @@ def mini_mapa(
                 novo_char = 'b'
                 linha_antiga = mapa_art[player.y_mapa]
                 mapa_art[player.y_mapa] = linha_antiga[:player.x_mapa] + novo_char + linha_antiga[player.x_mapa + 1:]
-
+                salvar_mapa_estado(save_filename, mapa_id, ESTADO_MAPAS[mapa_id])
         def falas(menager):
             clear_region_a(x=x_l + CAMERA_WIDTH + 6, start_y=y_l, end_y=y_l, width=CAMERA_WIDTH + 5)
             draw_window(term, x=x_l + CAMERA_WIDTH + 5, y=y_l, width=CAMERA_WIDTH + 5, height=CAMERA_HEIGHT + 2, text_content=menager)
@@ -157,13 +159,6 @@ def mini_mapa(
         if mapas_ == mapas.mapa_castelo.split("\n"):
             if caractere_atual == "B":
                 bau()
-            elif caractere_atual == "@":
-                inimigo_ = seleção_inimigo(num=1)
-                batalha(player_b=player, inimigo_b=inimigo_)
-                if inimigo_.hp <= 0:
-                    ESTADO_MAPAS[mapa_id]["inimigos_derrotados"].add((player.x_mapa, player.y_mapa))
-                    linha_antiga = mapa_art[player.y_mapa]
-                    mapa_art[player.y_mapa] = linha_antiga[:player.x_mapa] + ' ' + linha_antiga[player.x_mapa + 1:]
 
             elif caractere_atual == "P":
                 if TODOS_OS_ITENS["Chave"] in player.inventario:
@@ -227,13 +222,6 @@ def mini_mapa(
                 return
             if caractere_atual == "B":
                 bau()
-            elif caractere_atual == "@":
-                inimigo_ = seleção_inimigo(num=1)
-                batalha(player_b=player, inimigo_b=inimigo_)
-                if inimigo_.hp <= 0:
-                    ESTADO_MAPAS[mapa_id]["inimigos_derrotados"].add((player.x_mapa, player.y_mapa))
-                    linha_antiga = mapa_art[player.y_mapa]
-                    mapa_art[player.y_mapa] = linha_antiga[:player.x_mapa] + ' ' + linha_antiga[player.x_mapa + 1:]
             elif player.x_mapa == 9 and player.y_mapa == 24 or player.x_mapa == 10 and player.y_mapa == 24:
                 core_custom = {
                     '#': term.blue,
@@ -430,8 +418,17 @@ Foi adicionado uma Chave do Dragão'''
                     mapa_nome="castelo_2",
                 )
                 return
-                
-                
+
+        if caractere_atual == "@":
+            inimigo_ = seleção_inimigo(num=1)
+            batalha(player_b=player, inimigo_b=inimigo_)
+            if inimigo_.hp <= 0:
+                ESTADO_MAPAS[mapa_id]["inimigos_derrotados"].add((player.x_mapa, player.y_mapa))
+                linha_antiga = mapa_art[player.y_mapa]
+                mapa_art[player.y_mapa] = linha_antiga[:player.x_mapa] + ' ' + linha_antiga[player.x_mapa + 1:]
+                salvar_mapa_estado(save_filename, mapa_id, ESTADO_MAPAS[mapa_id])
+
+
         if feedback_message:
             with term.location(0, CAMERA_HEIGHT + y_l + 4):
                 print(term.red(feedback_message))
@@ -471,12 +468,12 @@ Foi adicionado uma Chave do Dragão'''
                         if caractere in INTERACOES:
                             INTERACOES[caractere]()
         else:
-            if movi == "inventario":
-                player.inventario_(x=x_l + CAMERA_WIDTH + 5, y=y_l, werd=CAMERA_WIDTH + 2, herd=0, batalha=False)
+            if movi == "i":
+                player.inventario_(x=x_l + CAMERA_WIDTH + 5, y=y_l, werd=CAMERA_WIDTH + 5, herd=0, batalha=False)
             elif movi == "sair":
                 exit()
             elif movi == "up":
-                player.up(x=x_l + CAMERA_WIDTH + 5, y=y_l, werd=CAMERA_WIDTH + 2, herd=CAMERA_HEIGHT + 2)
+                player.up(x=x_l + CAMERA_WIDTH + 5, y=y_l, werd=CAMERA_WIDTH + 5, herd=CAMERA_HEIGHT + 2)
             elif movi == "q" and mapa_anterior:
                 exit()
             elif movi == "save":
@@ -497,20 +494,17 @@ Foi adicionado uma Chave do Dragão'''
             else:
                 feedback_message = f"Comando '{movi}' inválido. Use w/a/s/d/inventario/up/q."
  
+
 """mini_mapa(
-    x_l=0,
-    y_l=0,
-    player=player,
-    ascii=ascii,
-    mapas_ = mapas.mapa_castelo.split("\n"),
-    x_p=10,
-    y_p=3, 
-    mapa_nome='catelo',
-    camera_w=35,
-    camera_h=15,
-    carater_ale='@',
-    quantidade_ale=10,
-    menager=""
-)
- 
+x_l=0,
+y_l=0,
+player=player,
+ascii=ascii,
+mapas_=mapas.taberna.split('\n'),
+camera_w=35,
+camera_h=15,
+x_p=22,
+y_p=10,
+menager="",
+mapa_nome='castelo_2')
 """

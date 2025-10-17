@@ -59,6 +59,7 @@ def draw_window(term, x, y, width, height, title='', text_content='', bg_color='
                     print(text_style + line[:width - 4] + term.normal)
 
 
+
 class Cores:
     PRETO = '\033[30m'
     VERMELHO = '\033[31m'
@@ -381,7 +382,6 @@ class mini_mapa_:
 #~~~~~~~~~~~^^^^░░░░░░~~~~~~~^^^^~~~~~~#
 ##################▒▒####################
 """
-
 class dialogos:
     def __init__(self):
         self.casa_1 = f"""Saia daqui seu forasteiro"""
